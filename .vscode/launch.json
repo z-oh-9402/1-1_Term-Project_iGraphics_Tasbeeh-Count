@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "d:/Tasbeeh Count",
-      "program": "d:/Tasbeeh Count/build/Debug/outDebug",
+      "cwd": "c:/Users/HP/Desktop/BUET/1-1/Tasbeeh Count",
+      "program": "c:/Users/HP/Desktop/BUET/1-1/Tasbeeh Count/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

@@ -9,13 +9,13 @@
 
 # include <stdio.h>
 # include <stdlib.h>
+#ifdef _WIN32
 #pragma comment(lib, "glut32.lib")
-#pragma comment(lib, "glaux.lib")
-#include "GL/glut.h"
+#include <windows.h>
+#endif
+#include <GL/glut.h>
 #include <time.h>
 #include <math.h>
-#include <windows.h>
-#include <GL/glaux.h>
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -36,16 +36,13 @@ void iSpecialKeyboard(unsigned char);
 void iMouseMove(int, int);
 void iMouse(int button, int state, int x, int y);
 
-static void  __stdcall iA0(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[0])iAnimFunction[0]();}
-static void  __stdcall iA1(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[1])iAnimFunction[1]();}
-static void  __stdcall iA2(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[2])iAnimFunction[2]();}
-static void  __stdcall iA3(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[3])iAnimFunction[3]();}
-static void  __stdcall iA4(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[4])iAnimFunction[4]();}
-static void  __stdcall iA5(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[5])iAnimFunction[5]();}
-static void  __stdcall iA6(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[6])iAnimFunction[6]();}
-static void  __stdcall iA7(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[7])iAnimFunction[7]();}
-static void  __stdcall iA8(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[8])iAnimFunction[8]();}
-static void  __stdcall iA9(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[9])iAnimFunction[9]();}
+int iTimersStarted = 0;
+
+static void iTimerFF(int i)
+{
+    if(!iAnimPause[i]) iAnimFunction[i]();
+    glutTimerFunc(iAnimDelays[i], iTimerFF, i);
+}
 
 int iSetTimer(int msec, void (*f)(void))
 {
@@ -57,17 +54,9 @@ int iSetTimer(int msec, void (*f)(void))
     iAnimDelays[i] = msec;
     iAnimPause[i] = 0;
 
-    if(iAnimCount == 0) SetTimer(0, 0, msec, iA0);
-    if(iAnimCount == 1) SetTimer(0, 0, msec, iA1);
-    if(iAnimCount == 2) SetTimer(0, 0, msec, iA2);
-    if(iAnimCount == 3) SetTimer(0, 0, msec, iA3);
-    if(iAnimCount == 4) SetTimer(0, 0, msec, iA4);
-
-    if(iAnimCount == 5) SetTimer(0, 0, msec, iA5);
-    if(iAnimCount == 6) SetTimer(0, 0, msec, iA6);
-    if(iAnimCount == 7) SetTimer(0, 0, msec, iA7);
-    if(iAnimCount == 8) SetTimer(0, 0, msec, iA8);
-    if(iAnimCount == 9) SetTimer(0, 0, msec, iA9);
+    // GLUT timers can only be registered after the window exists, so timers
+    // set before iInitialize() are started from there instead.
+    if(iTimersStarted) glutTimerFunc(msec, iTimerFF, i);
     iAnimCount++;
 
     return iAnimCount-1;
@@ -101,7 +90,7 @@ void iResumeTimer(int index){
 //
 //                To disable this feature, put -1 in this parameter
 //
-void iShowBMP2(int x, int y, char filename[], int ignoreColor)
+void iShowBMP2(int x, int y, const char filename[], int ignoreColor)
 {
    /// old implementation, causes memory leak
     /*
@@ -216,7 +205,7 @@ void iShowBMP2(int x, int y, char filename[], int ignoreColor)
 
 }
 
-void iShowBMP(int x, int y, char filename[])
+void iShowBMP(int x, int y, const char filename[])
 {
     iShowBMP2(x, y, filename, -1 /* ignoreColor */);
 }
@@ -234,7 +223,7 @@ void iGetPixelColor (int cursorX, int cursorY, int rgb[])
     //printf("%d %d %d\n",pixel[0],pixel[1],pixel[2]);
 }
 
-void iText(GLdouble x, GLdouble y, char *str, void* font=GLUT_BITMAP_8_BY_13)
+void iText(GLdouble x, GLdouble y, const char *str, void* font=GLUT_BITMAP_8_BY_13)
 {
     glRasterPos3d(x, y, 0);
     int i;
@@ -511,10 +500,15 @@ void mouseHandlerFF(int button, int state, int x, int y)
     glFlush();
 }
 
-void iInitialize(int width=500, int height=500, char *title="iGraphics")
+void iInitialize(int width=500, int height=500, const char *title="iGraphics")
 {
     iScreenHeight = height;
     iScreenWidth = width;
+
+    // freeglut refuses to create a window unless glutInit() was called first
+    int argc = 1;
+    char *argv[] = {(char *)title, NULL};
+    glutInit(&argc, argv);
 
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_ALPHA) ;
     glutInitWindowSize(width , height ) ;
@@ -543,6 +537,9 @@ void iInitialize(int width=500, int height=500, char *title="iGraphics")
     //
     glAlphaFunc(GL_GREATER,0.0f);
     glEnable(GL_ALPHA_TEST);
+
+    iTimersStarted = 1;
+    for(int i = 0; i < iAnimCount; i++) glutTimerFunc(iAnimDelays[i], iTimerFF, i);
 
     glutMainLoop();
 }
