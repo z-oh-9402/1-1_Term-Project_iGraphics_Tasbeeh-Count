@@ -308,10 +308,8 @@ void print_name_index() {
 	cnt = 0;
 	iShowBMP2(5, 475, "pictures/red_back_arrow.bmp", 0);
 	iSetColor(0, 0, 0);
-	int vert;
-
+	int vert = 345;
 	iText(100, 400 + gap, "Recent users", GLUT_BITMAP_TIMES_ROMAN_24);
-	vert = 345;
 
 	FILE *m_file;
 	if (call == 19) {
@@ -328,10 +326,10 @@ void print_name_index() {
 		}
 
 		iSetColor(196, 164, 132);
-		iFilledRectangle(45, vert+gap, 422, 25);
+		iFilledRectangle(45, vert + gap, 422, 25);
 		iSetColor(0, 0, 0);
-		iRectangle(45, vert+gap, 422, 25);
-		iText(50, vert+5+gap, participant[i], GLUT_BITMAP_TIMES_ROMAN_24);
+		iRectangle(45, vert + gap, 422, 25);
+		iText(50, vert + 5 + gap, participant[i], GLUT_BITMAP_TIMES_ROMAN_24);
 		vert = vert - 50;
 		cnt++;
 		a = 1;
@@ -471,10 +469,10 @@ void print_dua_index() {
 			if(num == 26) {
                 if(done[i] == 1) {
                     iText(50, vert + 5, dua[i], GLUT_BITMAP_TIMES_ROMAN_24);
-                    iShowBMP2(432, vert, "Green Tick.bmp", 0);
+                    iShowBMP2(432, vert, "pictures/green_tick.bmp", 0);
                 } else {
                     if(tm[i] <= seconds) {
-                        iShowBMP2(432, vert, "red cross.bmp", 0);
+                        iShowBMP2(432, vert, "pictures/red_cross.bmp", 0);
                     } else {
                         if (day > 0) {
                             iText(330, vert + 7, days, GLUT_BITMAP_HELVETICA_18);
@@ -1068,9 +1066,10 @@ void scan_file() {
 
 void iDraw() {
 	iClear();
+
 	if (num == 0) {
 		load_bg();
-		iShowBMP2(128, 305, "Screenshot.bmp", 0);
+		iShowBMP2(128, 305, "pictures/title.bmp", 0);
 		iSetColor(255, 235, 255);
 		iFilledRectangle(100, 240, 100, 50);
 		iFilledRectangle(100, 140, 100, 50);
@@ -1098,7 +1097,7 @@ void iDraw() {
 		//notification();
 
 		if (m == 1) {
-			iShowBMP2(385, 96, "Down Arrow.bmp", 0);
+			iShowBMP2(385, 96, "pictures/down_arrow.bmp", 0);
 			iSetColor(255, 255, 200);
 			iFilledRectangle(215, 15, 180, 115);
 			iSetColor(98, 45, 67);
@@ -1181,12 +1180,12 @@ void iDraw() {
 		load_bg();
 		call = 8;
 		print_name_index();
-		length = 512 - ((cnt*50)-375);
+		length = 512 - ((cnt*50) - 375);
 		if(length<512) {
-            iSetColor(200,200,200);
-            iFilledRectangle(500,0,12,512);
-            iSetColor(96,96,96);
-            iFilledRectangle(500,y-length,12,length);
+            iSetColor(200, 200, 200);
+            iFilledRectangle(500, 0, 12, 512);
+            iSetColor(96, 96, 96);
+            iFilledRectangle(500, y - length,  12, length);
             gap = 512-y;
         } else {
             gap=0;
@@ -1248,7 +1247,7 @@ void iDraw() {
 		load_bg();
 		call = 17;
 		print_name_index();
-		length = 512 - ((cnt * 50) - 345);
+		length = 512 - ((cnt * 50) - 375);
 		if(length<512) {
             iSetColor(200, 200, 200);
             iFilledRectangle(500, 0, 12, 512);
@@ -1278,7 +1277,7 @@ void iDraw() {
 
 	if (num == 19) {
 		load_bg();
-		iShowBMP2(458, 400, "Purple Plus.bmp", 0);
+		iShowBMP2(458, 400, "pictures/purple_plus.bmp", 0);
 		call = 19;
 		print_name_index();
 		length = 512 - ((cnt * 50) - 375);
@@ -1322,7 +1321,7 @@ void iDraw() {
 
 	if (num == 26) {
 		load_bg();
-		iShowBMP2(5, 10, "Purple Plus.bmp", 0);
+		iShowBMP2(5, 10, "pictures/purple_plus.bmp", 0);
 		print_dua_index();
 	}
 
@@ -1363,7 +1362,7 @@ void iDraw() {
 			iFilledRectangle(45, vert, 422, 40);
 			iSetColor(0, 0, 43);
 			iRectangle(45, vert, 422, 40);
-			iText(55, vert+14, theme[i], GLUT_BITMAP_TIMES_ROMAN_24);
+			iText(55, vert + 14, theme[i], GLUT_BITMAP_TIMES_ROMAN_24);
 			vert = vert - 50;
 		}
 	}
@@ -1664,234 +1663,59 @@ void iMouse(int button, int state, int mx, int my) {
 		} else if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 2;
 		}
-	} else if (num == 17 && a==1) {
-		if (mx >= 45 && mx <= 467 && my >= 345+gap && my <= 370+gap && participant[0][0]>='0' && participant[0][0] <= '9' && u == 0 && d==0) {
-			r = 0;
-			if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                hang = 250 + gap;
-                dialog_num = 0;
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= 295+gap && my <= 320+gap && participant[1][0]>='0' && participant[1][0] <= '9' && u == 0 && d == 0) {
-			r = 1;
-			if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                hang = 200 + gap;
-                dialog_num = 0;
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= 245+gap && my <= 270+gap && participant[2][0]>='0' && participant[2][0] <= '9' && u == 0 && d == 0) {
-			r = 2;
-			if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                hang = 150 + gap;
-                dialog_num = 0;
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= 195+gap && my <= 220+gap && participant[3][0]>='0' && participant[3][0] <= '9' && u == 0 && d == 0) {
-			r = 3;
-			if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                hang = 100 + gap;
-                dialog_num = 0;
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= 145+gap && my <= 170+gap && participant[4][0]>='0' && participant[4][0] <= '9' && u == 0 && d == 0) {
-		    r = 4;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                hang = 50 + gap;
-                dialog_num = 0;
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= 95+gap && my <= 120+gap && participant[5][0]>='0' && participant[5][0] <= '9' && u == 0 && d == 0) {
-		    r = 5;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                hang = 0 + gap;
-                dialog_num = 0;
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= 45+gap && my <= 70+gap && participant[6][0]>='0' && participant[6][0] <= '9' && u == 0 && d == 0) {
-		    r = 6;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                if((-50 + gap)>=0) {
-                    hang = -50 + gap;
-                    dialog_num = 0;
-                } else {
-                    hang = 63 + gap;
-                    dialog_num = 1;
-                }
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= -5+gap && my <= 20+gap && participant[7][0]>='0' && participant[7][0] <= '9' && u == 0 && d == 0) {
-		    r = 7;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                if((-100+gap)>=0) {
-                    hang = -100+gap;
-                    dialog_num = 0;
-                } else {
-                    hang = 13+gap;
-                    dialog_num = 1;
-                }
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= -55+gap && my <= -30+gap && participant[8][0]>='0' && participant[8][0] <= '9' && u == 0 && d == 0) {
-		    r = 8;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                if((-150+gap)>=0) {
-                    hang = -150+gap;
-                    dialog_num = 0;
-                } else {
-                    hang = -37+gap;
-                    dialog_num = 1;
-                }
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= -105+gap && my <= -80+gap && participant[9][0]>='0' && participant[9][0] <= '9' && u == 0 && d == 0) {
-		    r = 9;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                if((-200+gap)>=0) {
-                    hang = -200+gap;
-                    dialog_num = 0;
-                } else {
-                    hang = -87+gap;
-                    dialog_num = 1;
-                }
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= -155+gap && my <= -130+gap && participant[10][0]>='0' && participant[10][0] <= '9' && u == 0 && d == 0) {
-		    r = 10;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                if((-250+gap)>=0) {
-                    hang = -250+gap;
-                    dialog_num = 0;
-                } else {
-                    hang = -137+gap;
-                    dialog_num = 1;
-                }
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= -205+gap && my <= -180+gap && participant[11][0]>='0' && participant[11][0] <= '9' && u == 0 && d == 0) {
-		    r = 11;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                if((-300+gap)>=0) {
-                    hang = -300+gap;
-                    dialog_num = 0;
-                } else {
-                    hang = -187+gap;
-                    dialog_num = 1;
-                }
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= -255 + gap && my <= -230+gap && participant[12][0]>='0' && participant[12][0] <= '9' && u == 0 && d == 0) {
-		    r = 12;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                if((-350+gap)>=0) {
-                    hang = -350+gap;
-                    dialog_num = 0;
-                } else {
-                    hang = -237+gap;
-                    dialog_num = 1;
-                }
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= -305+gap && my <= -280+gap && participant[13][0]>='0' && participant[13][0] <= '9' && u == 0 && d == 0) {
-		    r = 13;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                if((-400+gap)>=0) {
-                    hang = -400+gap;
-                    dialog_num = 0;
-                } else {
-                    hang = -287+gap;
-                    dialog_num = 1;
-                }
-                u = 1;
-            }
-		} else if (mx >= 45 && mx <= 467 && my >= -355+gap && my <= -330+gap && participant[14][0]>='0' && participant[14][0] <= '9' && u == 0 && d == 0) {
-		    r = 14;
-		    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d==0) {
-                num = 18;
-            }
-            if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-                if((-450+gap)>=0) {
-                    hang = -450+gap;
-                    dialog_num = 0;
-                } else {
-                    hang = -337+gap;
-                    dialog_num = 1;
-                }
-                u = 1;
-            }
-		} else if (u == 1 && mx >= 248 && mx <= 312 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		    if((my >= hang + 18 && my <= hang + 32 && dialog_num == 0) || (my >= hang + 38 && my <= hang + 52 && dialog_num == 1)) {
-                d = 1;
-                u = 0;
-            }
-		    if((my >= hang + 48 && my <= hang + 62 && dialog_num == 0) || (my >= hang + 68 && my <= hang + 82 && dialog_num == 1)) {
-                call = 17;
-                num = 4;
-                u = 0;
-            }
-		} else if (mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d == 1) {
-		    d = 0;
-		    call = num;
-			delete_file();
-		} else if (mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d == 1) {
-			d = 0;
-			num = call;
-		} else if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			if (u == 1) {
-				u = 0;
-				num = 17;
-			} else if (d == 1) {
+	} else if (num == 17) {
+		if (a == 1) {
+			for (int i = 0; i < 15; i++) {
+				if (mx >= 45 && mx <= 467 && my >= (345 - (i * 50) + gap) && my <= (370 - (i * 50) + gap) && participant[i][0] >= '0' && participant[i][0] <= '9' && u == 0 && d == 0) {
+					r = i;
+					if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d == 0) {
+						num = 18;
+					}
+					if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+						if ((250 - (i * 50) + gap) >= 0) {
+							hang = 250 - (i * 50) + gap;
+							dialog_num = 0;
+						} else {
+							hang = 363 - (i * 50) + gap;
+							dialog_num = 1;
+						}
+						u = 1;
+					}
+				}
+			}
+
+			if (u == 1 && mx >= 248 && mx <= 312 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+				if((my >= hang + 18 && my <= hang + 32 && dialog_num == 0) || (my >= hang + 38 && my <= hang + 52 && dialog_num == 1)) {
+					d = 1;
+					u = 0;
+				}
+				if((my >= hang + 48 && my <= hang + 62 && dialog_num == 0) || (my >= hang + 68 && my <= hang + 82 && dialog_num == 1)) {
+					call = 17;
+					num = 4;
+					u = 0;
+				}
+			} else if (d == 1 && mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 				d = 0;
-				num = 17;
-			} else {
+				call = num;
+				delete_file();
+			} else if (d == 1 && mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+				d = 0;
+			} else if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+				if (u == 1) {
+					u = 0;
+					num = 17;
+				} else if (d == 1) {
+					d = 0;
+					num = 17;
+				} else {
+					num = 0;
+				}
+			} else;
+		} else {
+			if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 				num = 0;
 			}
-		} else;
-	} else if (num == 17 && a == 0) {
-		if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			num = 0;
-		}
+		}	
 	} else if (num == 18) {
 		if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			if (u == 1) {
