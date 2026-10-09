@@ -1,6 +1,7 @@
 #include "iGraphics.h"
 
-int y, y_1, r, num = 0,u = 0, length, length1, gap=0, gap1=0, hang, dialog_num;
+int y, y_1, r, num = 0, length, length1, gap=0, gap1=0, hang, dialog_num;
+bool is_empty, is_dialog_open = false, is_deleting = false;
 char s[100], nme[100];
 const char dialog[100] = "pictures/dialog_boxes/dialog%d.bmp";
 char days[100];
@@ -13,7 +14,7 @@ const char file[100] = "data_files/regular_reads/participant%d.txt";
 const char file1[100] = "data_files/targetted_reads/participant%d.txt";
 char text[3][100] = { "Enter your name:", "Enter the Dua:", "Enter your target:" };
 const char tasbeeh_pic[100] = "pictures/tasbeeh/pic%d.png";
-int a, seq, tasbeeh_pic_index=0;
+int seq, tasbeeh_pic_index=0;
 char random1[10][5], random2[10][5], random3[15][5], random4[10][5], name[15][100], tym[100], cnt_dua[100];
 const char bg[100] = "pictures/bg/plain_bg%d.bmp";
 const char main_bg[100] = "pictures/bg/bg%d.bmp";
@@ -26,7 +27,7 @@ bool musicOn = true, musicOn2 = true;
 int count_dua[10], count_dua1[10], target[10];
 int count = 0, cnt=0, cnt1=0;
 time_t seconds;
-int b = 0, w = 0, l, d = 0, g = 0, m = 0, f, call = 0;
+int b = 0, w = 0, l, g = 0, m = 0, f, call = 0;
 char ti[30];
 char *count_store = (char*)malloc(sizeof(char)* 10);
 char comment[2][100] = { "Saved Successfully!!!", "Deleted Successfully!!!" };
@@ -160,7 +161,7 @@ void delete_file() {
 }
 
 void delete_data() {
-	d = 0;
+	is_deleting = false;
 	int v = 0;
 	FILE *fp;
 
@@ -304,7 +305,7 @@ void delete_data() {
 
 void print_name_index() {
     call = num;
-	a = 0;
+	is_empty = true;
 	cnt = 0;
 	iShowBMP2(5, 475, "pictures/red_back_arrow.bmp", 0);
 	iSetColor(0, 0, 0);
@@ -332,12 +333,12 @@ void print_name_index() {
 		iText(50, vert + 5 + gap, participant[i], GLUT_BITMAP_TIMES_ROMAN_24);
 		vert = vert - 50;
 		cnt++;
-		a = 1;
+		is_empty = false;
 	}
 
 	fclose(m_file);
 
-	if (a == 0) {
+	if (is_empty) {
 		if (num != 19) {
 			iSetColor(0, 0, 0);
 			iText(100, 256, "No such existing file.", GLUT_BITMAP_TIMES_ROMAN_24);
@@ -348,7 +349,7 @@ void print_name_index() {
 		}
 	}
 
-	if (u == 1 && (num == 17 || num == 19)) {
+	if (is_dialog_open && (num == 17 || num == 19)) {
 		sprintf(path, dialog, dialog_num + 1);
 		iShowBMP2(205, hang, path, 0);
 
@@ -361,7 +362,7 @@ void print_name_index() {
         }
 	}
 
-	if(d == 1 && (num == 17 || num == 19)) {
+	if(is_deleting && (num == 17 || num == 19)) {
         iSetColor(255, 200, 100);
 		iFilledRectangle(100, 148, 295, 220);
 		iSetColor(98, 45, 67);
@@ -381,7 +382,7 @@ void print_name_index() {
 }
 
 void print_dua_index() {
-	a = 0;
+	is_empty = true;
 	cnt1 = 0;
 	iShowBMP2(5, 475, "pictures/red_back_arrow.bmp", 0);
 	iSetColor(0, 0, 0);
@@ -486,18 +487,18 @@ void print_dua_index() {
 		}
 		vert = vert - 30;
 		cnt1++;
-		a = 1;
+		is_empty = false;
 	}
 	fclose(fp);
 
-	if (u == 1 && (num == 18 || num==26)) {
+	if (is_dialog_open && (num == 18 || num==26)) {
 		iShowBMP2(185, 210 - l * 30, "pictures/dialog_boxes/dialog.bmp", 0);
 		iText(248, 318 - l * 30, "Continue", GLUT_BITMAP_TIMES_ROMAN_24);
 		iText(248, 288 - l * 30, "Rename", GLUT_BITMAP_TIMES_ROMAN_24);
 		iText(248, 258 - l * 30, "Delete", GLUT_BITMAP_TIMES_ROMAN_24);
 	}
 
-	if (d == 1 && (num == 18 || num==26)) {
+	if (is_deleting && (num == 18 || num==26)) {
 		iSetColor(255, 200, 100);
 		iFilledRectangle(100, 148, 295, 220);
 		iSetColor(98, 45, 67);
@@ -1268,8 +1269,8 @@ void iDraw() {
             iSetColor(200,200,200);
             iFilledRectangle(500,0,12,512);
             iSetColor(96,96,96);
-            iFilledRectangle(500,y_1-length1,12,length1);
-            gap = 512-y_1;
+            iFilledRectangle(500,y_1 - length1,12,length1);
+            gap = 512 - y_1;
         } else {
             gap=0;
         }
@@ -1494,23 +1495,16 @@ void iMouse(int button, int state, int mx, int my) {
 		if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 6;
 		}
-	} else if (num == 8 && a==1) {
-		if (mx >= 45 && mx <= 467 && my >= 345 && my <= 370 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[0][0] >= '0' && participant[0][0]<='9') {
-			r = 0;
-			num = 9;
-		} else if (mx >= 45 && mx <= 467 && my >= 295 && my <= 320 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[1][0] >= '0' && participant[1][0] <= '9') {
-			r = 1;
-			num = 9;
-		} else if (mx >= 45 && mx <= 467 && my >= 245 && my <= 270 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[2][0] >= '0' && participant[2][0]<='9') {
-			r = 2;
-			num = 9;
-		} else if (mx >= 45 && mx <= 467 && my >= 195 && my <= 220 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[3][0] >= '0' && participant[3][0]<='9') {
-			r = 3;
-			num = 9;
-		} else if (mx >= 45 && mx <= 467 && my >= 145 && my <= 170 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[4][0] >= '0' && participant[4][0]<='9') {
-			r = 4;
-			num = 9;
-		} else if (mx >= 5 && mx <= 467 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+	} else if (num == 8 && !is_empty) {
+		for (int i = 0; i < 15; i++) {
+			if (mx >= 45 && mx <= 467 && my >= 345 - (i * 50) && my <= 370 - (i * 50) && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[i][0] >= '0' && participant[i][0] <= '9') {
+				r = i;
+				num = 9;
+				break;
+			}
+		}
+		
+		if (mx >= 5 && mx <= 467 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 3;
 		}
 	} else if (num == 9) {
@@ -1536,57 +1530,17 @@ void iMouse(int button, int state, int mx, int my) {
 	} else if (num == 12) {
 		if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 9;
-		} else if (mx >= 45 && mx <= 467 && my >= 365 && my <= 390 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[0][0]>='0' && random1[0][0]<='9') {
-			count_dua[0] += count;
-			tm[0] = tmr;
-			l = 0;
-			replace_file();
-		} else if (mx >= 45 && mx <= 467 && my >= 335 && my <= 360 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[1][0]>='0' && random1[1][0] <= '9') {
-			count_dua[1] += count;
-			tm[1] = tmr;
-			l = 1;
-			replace_file();
-		} else if (mx >= 45 && mx <= 467 && my >= 305 && my <= 330 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[2][0]>='0' && random1[2][0] <= '9') {
-			count_dua[2] += count;
-			tm[2] = tmr;
-			l = 2;
-			replace_file();
-		} else if (mx >= 45 && mx <= 467 && my >= 275 && my <= 300 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[3][0]>='0' && random1[3][0] <= '9') {
-			count_dua[3] += count;
-			tm[3] = tmr;
-			l = 3;
-			replace_file();
-		} else if (mx >= 45 && mx <= 467 && my >= 245 && my <= 270 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[4][0]>='0' && random1[4][0] <= '9') {
-			count_dua[4] += count;
-			tm[4] = tmr;
-			l = 4;
-			replace_file();
-		} else if (mx >= 45 && mx <= 467 && my >= 215 && my <= 240 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[5][0]>='0' && random1[5][0] <= '9') {
-			count_dua[5] += count;
-			tm[5] = tmr;
-			l = 5;
-			replace_file();
-		} else if (mx >= 45 && mx <= 467 && my >= 185 && my <= 210 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[6][0]>='0' && random1[6][0] <= '9') {
-			count_dua[6] += count;
-			tm[6] = tmr;
-			l = 6;
-			replace_file();
-		} else if (mx >= 45 && mx <= 467 && my >= 155 && my <= 180 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[7][0]>='0' && random1[7][0] <= '9') {
-			count_dua[7] += count;
-			tm[7] = tmr;
-			l = 7;
-			replace_file();
-		} else if (mx >= 45 && mx <= 467 && my >= 125 && my <= 150 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[8][0]>='0' && random1[8][0] <= '9') {
-			count_dua[8] += count;
-			tm[8] = tmr;
-			l = 8;
-			replace_file();
-		} else if (mx >= 45 && mx <= 467 && my >= 95 && my <= 120 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[9][0]>='0' && random1[9][0] <= '9') {
-			count_dua[9] += count;
-			tm[9] = tmr;
-			l = 9;
-			replace_file();
-		} else;
+		} 
+
+		for (int i = 0; i < 10; i++) {
+			if (mx >= 45 && mx <= 467 && my >= 365 - (i * 30) && my <= 390 - (i * 30) && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[i][0] >= '0' && random1[i][0] <= '9') {
+				count_dua[i] += count;
+				tm[i] = tmr;
+				l = i;
+				replace_file();
+				break;
+			}
+		}
 	} else if (num == 14) {
 		if (mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 0;
@@ -1664,11 +1618,11 @@ void iMouse(int button, int state, int mx, int my) {
 			num = 2;
 		}
 	} else if (num == 17) {
-		if (a == 1) {
+		if (!is_empty) {
 			for (int i = 0; i < 15; i++) {
-				if (mx >= 45 && mx <= 467 && my >= (345 - (i * 50) + gap) && my <= (370 - (i * 50) + gap) && participant[i][0] >= '0' && participant[i][0] <= '9' && u == 0 && d == 0) {
+				if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 467 && my >= (345 - (i * 50) + gap) && my <= (370 - (i * 50) + gap) && participant[i][0] >= '0' && participant[i][0] <= '9') {
 					r = i;
-					if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d == 0) {
+					if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 						num = 18;
 					}
 					if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
@@ -1679,34 +1633,35 @@ void iMouse(int button, int state, int mx, int my) {
 							hang = 363 - (i * 50) + gap;
 							dialog_num = 1;
 						}
-						u = 1;
+						is_dialog_open = true;
 					}
+					break;
 				}
 			}
 
-			if (u == 1 && mx >= 248 && mx <= 312 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			if (is_dialog_open && mx >= 248 && mx <= 312 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 				if((my >= hang + 18 && my <= hang + 32 && dialog_num == 0) || (my >= hang + 38 && my <= hang + 52 && dialog_num == 1)) {
-					d = 1;
-					u = 0;
+					is_deleting = true;
+					is_dialog_open = false;
 				}
 				if((my >= hang + 48 && my <= hang + 62 && dialog_num == 0) || (my >= hang + 68 && my <= hang + 82 && dialog_num == 1)) {
 					call = 17;
 					num = 4;
-					u = 0;
+					is_dialog_open = false;
 				}
-			} else if (d == 1 && mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-				d = 0;
-				call = num;
-				delete_file();
-			} else if (d == 1 && mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-				d = 0;
+			} else if (is_deleting && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+				if (mx >= 140 && mx <= 220) {
+					is_deleting = false;
+					call = 17;
+					delete_file();
+				} else if (mx >= 275 && mx <= 355) {
+					is_deleting = false;
+				} else;
 			} else if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-				if (u == 1) {
-					u = 0;
-					num = 17;
-				} else if (d == 1) {
-					d = 0;
-					num = 17;
+				if (is_dialog_open) {
+					is_dialog_open = false;
+				} else if (is_deleting) {
+					is_deleting = false;
 				} else {
 					num = 0;
 				}
@@ -1718,129 +1673,99 @@ void iMouse(int button, int state, int mx, int my) {
 		}	
 	} else if (num == 18) {
 		if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			if (u == 1) {
-				u = 0;
-				num = 18;
-			} else if (d == 1) {
-				d = 0;
-				num = 18;
+			if (is_dialog_open) {
+				is_dialog_open = false;
+			} else if (is_deleting) {
+				is_deleting = false;
 			} else {
 				num = 17;
 			}
 		}
 
-		if (mx >= 45 && mx <= 467 && my >= 365 && my <= 390 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[0][0] >= '0' && dua[0][0] <= '9' && u==0) {
-			l = 0;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 335 && my <= 360 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[1][0] >= '0' && dua[1][0] <= '9' && u==0) {
-			l = 1;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 305 && my <= 330 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[2][0] >= '0' && dua[2][0] <= '9' && u==0) {
-			l = 2;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 275 && my <= 300 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[3][0] >= '0' && dua[3][0] <= '9'&& u==0) {
-			l = 3;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 245 && my <= 270 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[4][0] >= '0' && dua[4][0] <= '9' && u==0) {
-			l = 4;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 215 && my <= 240 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[5][0] >= '0' && dua[5][0] <= '9' && u==0) {
-			l = 5;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 185 && my <= 210 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[6][0] >= '0' && dua[6][0] <= '9' && u==0) {
-			l = 6;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 155 && my <= 180 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[7][0] >= '0' && dua[7][0] <= '9' && u==0) {
-			l = 7;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 125 && my <= 150 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[8][0] >= '0' && dua[8][0] <= '9' && u==0) {
-			l = 8;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 95 && my <= 120 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[9][0] >= '0' && dua[9][0] <= '9' && u==0) {
-			l = 9;
-			u = 1;
-		} else if (u == 1 && mx >= 248 && mx <= 390 && my >= 318 - l * 30 && my <= 332 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		for (int i = 0; i < 10; i++) {
+			if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 467 && my >= 365 - (i * 30) && my <= 390 - (i * 30) && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[0][0] >= '0' && dua[0][0] <= '9') {
+				l = i;
+				is_dialog_open = true;
+				break;
+			}
+		}
+
+		if (is_dialog_open && mx >= 248 && mx <= 390 && my >= 318 - l * 30 && my <= 332 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			count = count_dua[l];
 			seconds = time(NULL);
 			b = 1;
 			w = 1;
 			call = 18;
 			num = 2;
-			u = 0;
-		} else if (u == 1 && mx >= 248 && mx <= 328 && my >= 288 - l * 30 && my <= 302 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			u = 0;
+			is_dialog_open = false;
+		} else if (is_dialog_open && mx >= 248 && mx <= 328 && my >= 288 - l * 30 && my <= 302 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			is_dialog_open = false;
 			call = num;
 			num = 6;
-		} else if (u == 1 && mx >= 248 && mx <= 312 && my >= 258 - l * 30 && my <= 272 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			d = 1;
-			u = 0;
-		} else if (mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d == 1) {
+		} else if (is_dialog_open && mx >= 248 && mx <= 312 && my >= 258 - l * 30 && my <= 272 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			is_deleting = true;
+			is_dialog_open = false;
+		} else if (is_deleting && mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			call = 18;
 			delete_data();
-		} else if (mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d == 1) {
-			d = 0;
-			num = 18;
+		} else if (mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			is_deleting = false;
 		} else;
-	} else if (num == 19 && a == 1) {
-		if (mx >= 5 && mx <= 37 && my >= 10 && my <= 42 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+	} else if (num == 19) {
+		if (!is_dialog_open && !is_deleting && mx >= 458 && mx <= 490 && my >= 400 && my <= 432 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 20;
-		} else if (mx >= 45 && mx <= 467 && my >= 345 && my <= 370 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[0][0]>='0' && participant[0][0] <= '9' && u==0 && d == 0) {
-			r = 0;
-			num = 26;
-		} else if (mx >= 45 && mx <= 467 && my >= 295 && my <= 320 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[1][0]>='0' && participant[1][0] <= '9' && u==0 && d == 0) {
-			r = 1;
-			num = 26;
-		} else if (mx >= 45 && mx <= 467 && my >= 245 && my <= 270 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[2][0]>='0' && participant[2][0] <= '9' && u==0 && d == 0) {
-			r = 2;
-			num = 26;
-		} else if (mx >= 45 && mx <= 467 && my >= 195 && my <= 220 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[3][0]>='0' && participant[3][0] <= '9' && u==0 && d == 0) {
-			r = 3;
-			num = 26;
-		} else if (mx >= 45 && mx <= 467 && my >= 145 && my <= 170 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[4][0]>='0' && participant[4][0] <= '9' && u==0 && d == 0) {
-			r = 4;
-			num = 26;
-		} else if (mx >= 45 && mx <= 467 && my >= 345 && my <= 370 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && participant[0][0]>='0' && participant[0][0] <= '9' && u==0) {
-			r = 0;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 295 && my <= 320 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && participant[1][0]>='0' && participant[1][0] <= '9' && u==0) {
-			r = 1;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 245 && my <= 270 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && participant[2][0]>='0' && participant[2][0] <= '9' && u==0) {
-			r = 2;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 195 && my <= 220 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && participant[3][0]>='0' && participant[3][0] <= '9' && u==0) {
-			r = 3;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 145 && my <= 170 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && participant[4][0]>='0' && participant[4][0] <= '9' && u==0) {
-			r = 4;
-			u = 1;
-		} else if (u == 1 && mx >= 248 && mx <= 328 && my >= 298 - r * 50 && my <= 312 - r * 50 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		    call = 19;
-            num = 4;
-			u = 0;
-		} else if (u == 1 && mx >= 248 && mx <= 312 && my >= 268 - r * 50 && my <= 282 - r * 50 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			d = 1;
-			u = 0;
-		} else if (mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d == 1) {
-			call = 19;
-			delete_file();
-		} else if (mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d == 1) {
-			d = 0;
-			num = 19;
-		} else if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			if (d == 1) {
-				d = 0;
-				num = 19;
-			} else if(u == 1) {
-                u = 0;
-                num = 19;
-            } else {
+		} 
+		
+		if (!is_empty) {
+			for (int i = 0; i < 15; i++) {
+				if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 467 && my >= (345 - (i * 50) + gap) && my <= (370 - (i * 50) + gap) && participant[i][0] >= '0' && participant[i][0] <= '9') {
+					r = i;
+					if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+						num = 26;
+					}
+					if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+						if ((250 - (i * 50) + gap) >= 0) {
+							hang = 250 - (i * 50) + gap;
+							dialog_num = 0;
+						} else {
+							hang = 363 - (i * 50) + gap;
+							dialog_num = 1;
+						}
+						is_dialog_open = true;
+					}
+					break;
+				}
+			}
+
+			if (is_dialog_open && mx >= 248 && mx <= 312 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+				if((my >= hang + 18 && my <= hang + 32 && dialog_num == 0) || (my >= hang + 38 && my <= hang + 52 && dialog_num == 1)) {
+					is_deleting = true;
+					is_dialog_open = false;
+				}
+				if((my >= hang + 48 && my <= hang + 62 && dialog_num == 0) || (my >= hang + 68 && my <= hang + 82 && dialog_num == 1)) {
+					call = 19;
+					num = 4;
+					is_dialog_open = false;
+				}
+			} else if (is_deleting && mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+				is_deleting = false;
+				call = num;
+				delete_file();
+			} else if (is_deleting && mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+				is_deleting = false;
+			} else if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+				if (is_dialog_open) {
+					is_dialog_open = false;
+				} else if (is_deleting) {
+					is_deleting = false;
+				} else {
+					num = 0;
+				}
+			} else;
+		} else {
+			if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 				num = 0;
 			}
-		} else;
-	} else if (num == 19 && a == 0) {
-		if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			num = 0;
 		}
 	} else if (num == 20) {
 		if (mx >= 128 && mx <= 128 + 256 && my >= 128 && my <= 178 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
@@ -1880,67 +1805,42 @@ void iMouse(int button, int state, int mx, int my) {
 		}
 	} else if (num == 26) {
 		if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			if (u == 1) {
-				u = 0;
-				num = 26;
-			} else if (d == 1) {
-				d = 0;
-				num = 26;
+			if (is_dialog_open) {
+				is_dialog_open = false;
+			} else if (is_deleting) {
+				is_deleting = false;
 			} else {
 				num = 19;
 			}
 		}
 
-		if (mx >= 45 && mx <= 467 && my >= 365 && my <= 390 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[0][0] >= '0' && dua[0][0] <= '9' && u == 0) {
-			l = 0;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 335 && my <= 360 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[1][0] >= '0' && dua[1][0] <= '9' && u == 0) {
-			l = 1;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 305 && my <= 330 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[2][0] >= '0' && dua[2][0] <= '9' && u == 0) {
-			l = 2;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 275 && my <= 300 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[3][0] >= '0' && dua[3][0] <= '9'&& u == 0) {
-			l = 3;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 245 && my <= 270 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[4][0] >= '0' && dua[4][0] <= '9' && u == 0) {
-			l = 4;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 215 && my <= 240 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[5][0] >= '0' && dua[5][0] <= '9' && u == 0) {
-			l = 5;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 185 && my <= 210 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[6][0] >= '0' && dua[6][0] <= '9' && u == 0) {
-			l = 6;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 155 && my <= 180 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[7][0] >= '0' && dua[7][0] <= '9' && u == 0) {
-			l = 7;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 125 && my <= 150 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[8][0] >= '0' && dua[8][0] <= '9' && u == 0) {
-			l = 8;
-			u = 1;
-		} else if (mx >= 45 && mx <= 467 && my >= 95 && my <= 120 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[9][0] >= '0' && dua[9][0] <= '9' && u == 0) {
-			l = 9;
-			u = 1;
-		} else if (u == 1 && mx >= 248 && mx <= 390 && my >= 318 - l * 30 && my <= 332 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		for (int i = 0; i < 10; i++) {
+			if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 467 && my >= 365 - (i * 30) && my <= 390 - (i * 30) && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[i][0] >= '0' && dua[i][0] <= '9') {
+				l = i;
+				is_dialog_open = true;
+				break;
+			}
+		}
+		
+		if (is_dialog_open && mx >= 248 && mx <= 390 && my >= 318 - l * 30 && my <= 332 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			count = count_dua1[l];
 			seconds = time(NULL);
 			b = 1;
 			w = 1;
 			call = 26;
 			num = 2;
-			u = 0;
-		} else if (u == 1 && mx >= 248 && mx <= 328 && my >= 288 - l * 30 && my <= 302 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			u = 0;
+			is_dialog_open = false;
+		} else if (is_dialog_open && mx >= 248 && mx <= 328 && my >= 288 - l * 30 && my <= 302 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			is_dialog_open = false;
 			call = num;
 			num = 6;
-		} else if (u == 1 && mx >= 248 && mx <= 312 && my >= 258 - l * 30 && my <= 272 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			d = 1;
-			u = 0;
-		} else if (mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d == 1) {
+		} else if (is_dialog_open && mx >= 248 && mx <= 312 && my >= 258 - l * 30 && my <= 272 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			is_deleting = true;
+			is_dialog_open = false;
+		} else if (is_deleting && mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			delete_data();
-		} else if (mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && d == 1) {
-			d = 0;
-			num = 26;
+		} else if (is_deleting && mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			is_deleting = false;
 		} else if (mx >= 5 && mx <= 37 && my >= 10 && my <= 42 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 32;
 		}
@@ -2043,7 +1943,7 @@ void iKeyboard(unsigned char key) {
                     f = 0;
                 }
 			}
-			if (num == 8 && a == 0) {
+			if (num == 8 && is_empty) {
 				num = 4;
 			}
 			if (num == 11) {
@@ -2059,7 +1959,7 @@ void iKeyboard(unsigned char key) {
 					g = 0;
 				}
 			}
-			if (num == 12 && a==0) {
+			if (num == 12 && is_empty) {
 				num = 10;
 			}
 			if (num == 13) {
@@ -2073,13 +1973,13 @@ void iKeyboard(unsigned char key) {
 					}
 				}
 			}
-			if (num == 14 && a == 0) {
+			if (num == 14 && is_empty) {
 				num = 0;
 			}
-			if (num == 17 && a == 0) {
+			if (num == 17 && is_empty) {
 				num = 0;
 			}
-			if (num == 19 && a == 0) {
+			if (num == 19 && is_empty) {
 				num = 0;
 			}
 			if (num == 21) {
@@ -2147,17 +2047,11 @@ GLUT_KEY_LEFT, GLUT_KEY_UP, GLUT_KEY_RIGHT, GLUT_KEY_DOWN, GLUT_KEY_PAGE UP,
 GLUT_KEY_PAGE DOWN, GLUT_KEY_HOME, GLUT_KEY_END, GLUT_KEY_INSERT
 */
 void iSpecialKeyboard(unsigned char key) {
-	if (key == GLUT_KEY_RIGHT) {
+	if (key == GLUT_KEY_RIGHT) {}
 
-	}
+	if (key == GLUT_KEY_LEFT) {}
 
-	if (key == GLUT_KEY_LEFT) {
-
-	}
-
-	if (key == GLUT_KEY_HOME) {
-
-	}
+	if (key == GLUT_KEY_HOME) {}
 }
 
 
