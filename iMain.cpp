@@ -1,5 +1,10 @@
 #include "iGraphics.h"
 #include "iSound.h"
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
 
 const int maxuser = 15, maxdua = 30;
 
@@ -81,6 +86,19 @@ void load_bg() {
 	iShowBMP2(0, 0, path, -1);
 }
 
+int count_users(const char *list_path) {
+	int users = 0;
+	char text_line[150];
+	FILE *fp = fopen(list_path, "r");
+	while (users < maxuser && fgets(text_line, 150, fp)) {
+		if (text_line[0] >= '0' && text_line[0] <= '9') {
+			users++;
+		}
+	}
+	fclose(fp);
+	return users;
+}
+
 void delete_file() {
 	y += 50;
 	FILE *fp;
@@ -122,44 +140,15 @@ void delete_file() {
 	strcpy(participant[cnt - 1], "");
 	fclose(fp);
 
-	for (int i = r; i < maxuser; i++) {
-		if (i == maxuser - 1) {
-			FILE *f_out;
 
-			if (num == 19) {
-				sprintf(path, file1, i + 1);
-				f_out = fopen(path, "w");
-			} else {
-				sprintf(path, file, i + 1);
-				f_out = fopen(path, "w");
-			}
-
-			fclose(f_out);
-		} else {
-			FILE *f_in;
-			FILE *f_out;
-
-			if (num == 19) {
-				sprintf(path, file1, i + 2);
-				f_in = fopen(path, "r");
-				sprintf(path, file1, i + 1);
-				f_out = fopen(path, "w");
-			} else {
-				sprintf(path, file, i + 2);
-				f_in = fopen(path, "r");
-				sprintf(path, file, i + 1);
-				f_out = fopen(path, "w");
-			}
-
-			char ch = fgetc(f_in);
-			while (ch != EOF) {
-				fputc(ch, f_out);
-				ch = fgetc(f_in);
-			}
-
-			fclose(f_in);
-			fclose(f_out);
-		}
+	sprintf(path, num == 19 ? file1 : file, r + 1);
+	remove(path);
+	int users = count_users(num == 19 ? targetted_participant_list : regular_participant_list);
+	for (int i = r + 1; i <= users; i++) {
+		char from[100];
+		sprintf(from, num == 19 ? file1 : file, i + 1);
+		sprintf(path, num == 19 ? file1 : file, i);
+		rename(from, path);
 	}
 	f = 1;
 	num = 13;
@@ -257,41 +246,14 @@ void delete_data() {
 		strcpy(participant[cnt - 1], "");
 		fclose(fp);
 
-		for (int i = r; i < maxuser; i++) {
-			if (i == maxuser - 1) {
-				FILE *f_out;
-				if (num == 26 || call == 2) {
-					sprintf(path, file1, i + 1);
-					f_out = fopen(path, "w");
-				} else {
-					sprintf(path, file, i + 1);
-					f_out = fopen(path, "w");
-				}
-				fclose(f_out);
-			} else {
-				FILE *f_in;
-				FILE *f_out;
-
-				if (num==26 || call == 2) {
-					sprintf(path, file1, i + 2);
-					f_in = fopen(path, "r");
-					sprintf(path, file1, i + 1);
-					f_out = fopen(path, "w");
-				} else {
-					sprintf(path, file, i + 2);
-					f_in = fopen(path, "r");
-					sprintf(path, file, i + 1);
-					f_out = fopen(path, "w");
-				}
-
-				char ch = fgetc(f_in);
-				while (ch != EOF) {
-					fputc(ch, f_out);
-					ch = fgetc(f_in);
-				}
-				fclose(f_in);
-				fclose(f_out);
-			}
+		sprintf(path, (num == 26 || call == 2) ? file1 : file, r + 1);
+		remove(path);
+		int users = count_users((num == 26 || call == 2) ? targetted_participant_list : regular_participant_list);
+		for (int i = r + 1; i <= users; i++) {
+			char from[100];
+			sprintf(from, (num == 26 || call == 2) ? file1 : file, i + 1);
+			sprintf(path, (num == 26 || call == 2) ? file1 : file, i);
+			rename(from, path);
 		}
 
 		if (call == 18) {
@@ -599,27 +561,15 @@ void append_file() {
 
 void create_file() {
 	FILE *f_in;
-	for (int i = maxuser - 1; i > 0; i--) {
-		FILE *f_out;
-		if (num == 7) {
-			sprintf(path, file, i);
-			f_in = fopen(path, "r");
-			sprintf(path, file, i + 1);
-			f_out = fopen(path, "w");
-		} else {
-			sprintf(path, file1, i);
-			f_in = fopen(path, "r");
-			sprintf(path, file1, i + 1);
-			f_out = fopen(path, "w");
-		}
-
-		char ch = fgetc(f_in);
-		while (ch != EOF) {
-			fputc(ch, f_out);
-			ch = fgetc(f_in);
-		}
-		fclose(f_in);
-		fclose(f_out);
+	const char *pattern = (num == 7) ? file : file1;
+	int users = count_users((num == 7) ? regular_participant_list : targetted_participant_list);
+	sprintf(path, pattern, users);
+	remove(path);
+	for (int i = users - 1; i >= 1; i--) {
+		char from[100];
+		sprintf(from, pattern, i);
+		sprintf(path, pattern, i + 1);
+		rename(from, path);
 	}
 	if (num == 7) {
 		sprintf(path, file, 1);
@@ -900,101 +850,43 @@ void rename() {
 }
 
 void notification() {
-    cnt = 0;
-    FILE *fp=fopen(targetted_participant_list,"r");
-    for(int i=0;i < maxuser;i++) {
-        fgets(participant[i],100,fp);
-        if(participant[i][0]<'0' || participant[i][0]>'9') {
-            continue;
-        }
-        cnt++;
-        strcpy(participant[i],"");
-    }
-    fclose(fp);
+	bool unfinished = false;
+	long long now = time(NULL);
+	char text_line[150];
 
-    if(cnt == 0) {
-        m=0;
-        return;
-    } else {
-        for(int i=0;i<cnt;i++) {
-            char dua3[maxdua][100];
-			sprintf(path, file1, i + 1);
-            fp=fopen(path,"r");
-            size1=0;
-            for(int j=0;j < maxdua;j++) {
-                fgets(dua[j],100,fp);
-                if(dua[j][0]<'0' || dua[j][0]>'9') {
-                    continue;
-                }
-                int rnd,rnd2,rnd3;
-                long long rnd1;
-                sscanf(dua[j],"%s %s %s %d %s %d %lld %d",random1[j],dua1[j],random2[j],&rnd,random3[j],&rnd2,&rnd1,&rnd3);
-                strcpy(random1[j],"");strcpy(random2[j],"");strcpy(random3[j],"");strcpy(dua1[j],"");
+	int users = 0;
+	FILE *fp = fopen(targetted_participant_list, "r");
+	while (users < maxuser && fgets(text_line, 150, fp)) {
+		if (text_line[0] >= '0' && text_line[0] <= '9') {
+			users++;
+		}
+	}
+	fclose(fp);
 
-                if((rnd1+86400)>scnds) {
-                    strcpy(dua3[size1],dua[j]);
-                    size1++;
-                }
-                strcpy(dua[j],"");
-            }
-            fclose(fp);
+	for (int i = 0; i < users && !unfinished; i++) {
+		sprintf(path, file1, i + 1);
+		fp = fopen(path, "r");
+		if (fp == NULL) {
+			continue;
+		}
+		while (fgets(text_line, 150, fp)) {
+			char serial[5], dua_name[100], dash1[5], dash2[5];
+			int target_count, count_done, is_done;
+			long long deadline, duration;
+			if (sscanf(text_line, "%s %s %s %d %s %d %lld %d %lld", serial, dua_name, dash1, &target_count, dash2, &count_done, &deadline, &is_done, &duration) == 9
+					&& is_done == 0 && deadline > now) {
+				unfinished = true;
+				break;
+			}
+		}
+		fclose(fp);
+	}
 
-            if(size1 != 0) {
-                if(m==0) {
-                    m=1;
-                }
-				sprintf(path, file1, i + 1);
-                fp=fopen(path,"w");
-                for(int k=0;k<size1;k++) {
-                    fprintf(fp,"%s",dua3[k]);
-                    strcpy(dua3[k],"");
-                }
-                fclose(fp);
-            } else {
-                char participant1[maxuser][100];
-                fp=fopen(targetted_participant_list,"r");
-                size2=0;
-                for(int k=0;k < maxuser;k++) {
-                    fgets(participant[k],100,fp);
-                    if(participant[k][0]<'0' || participant[k][0]>'9') {
-                        continue;
-                    }
-                    if(k!=i) {
-                        strcpy(participant1[size2],participant[k]);
-                        size2++;
-                    }
-                }
-                fclose(fp);
-                fp=fopen(targetted_participant_list,"r");
-                for(int k=0;k<size2;k++) {
-                    fprintf(fp,"%s",participant1[k]);
-                }
-                fclose(fp);
-
-                for(int k=i;k<size2;k++) {
-                    FILE *fp1;
-					sprintf(path, file1, k + 1);
-                    fp=fopen(path,"w");
-					sprintf(path, file1, k + 2);
-                    fp1=fopen(path,"r");
-
-                    char c=fgetc(fp1);
-                    while(c) {
-                        fputc(c,fp);
-                        c=fgetc(fp1);
-                    }
-
-                    fclose(fp);
-                    fclose(fp1);
-                }
-
-				sprintf(path, file1, size2 + 1);
-                fp=fopen(path,"w");
-                fclose(fp);
-            }
-        }
-        return;
-    }
+	if (!unfinished) {
+		m = 0;
+	} else if (m == 0) {
+		m = 1;
+	}
 }
 
 void before_save() {
@@ -1145,21 +1037,20 @@ void iDraw() {
 		iText(328, 157, "Target", GLUT_BITMAP_TIMES_ROMAN_24);
 		iShowBMP2(468, 471, musicOn ? "pictures/sound_on.bmp" : "pictures/sound_off.bmp", 0xffffff);
 
-		//notification();
+		static time_t last_check = 0;
+		if (q != last_check) {
+			notification();
+			last_check = q;
+		}
 
 		if (m == 1) {
 			iShowBMP2(385, 96, "pictures/down_arrow.bmp", 0);
 			iSetColor(255, 255, 200);
-			iFilledRectangle(215, 15, 180, 115);
+			iFilledRectangle(215, 55, 180, 75);
 			iSetColor(98, 45, 67);
-			iRectangle(215, 15, 180, 115);
+			iRectangle(215, 55, 180, 75);
 			iText(250, 100, "There is an", GLUT_BITMAP_TIMES_ROMAN_24);
 			iText(225, 70, "unfinished goal!", GLUT_BITMAP_TIMES_ROMAN_24);
-			iSetColor(255, 255, 255);
-			iFilledRectangle(320, 25, 50, 20);
-			iSetColor(90, 12, 200);
-			iRectangle(320, 25, 50, 20);
-			iText(331, 32, "VISIT", GLUT_BITMAP_TIMES_ROMAN_10);
 		}
 	}
 
@@ -1411,6 +1302,7 @@ void iMouseMove(int mx, int my) {
         }
     }
 }
+
 //*******************************************************************ipassiveMouse***********************************************************************//
 void iPassiveMouseMove(int mx, int my) {
 
@@ -1435,9 +1327,6 @@ void iMouse(int button, int state, int mx, int my) {
 			if (m == 1) {
 				m = 2;
 			}
-		} else if (m == 1 && mx >= 320 && mx <= 370 && my >= 25 && my <= 45 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			num = 19;
-			m = 2;
 		} else;
 	} else if (num == 2) {
 		if (mx >= 471 && mx <= 507 && my >= 471 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
@@ -1716,7 +1605,6 @@ void iMouse(int button, int state, int mx, int my) {
 		for (int i = 0; i < maxdua; i++) {
 			if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 45 + content_bar_width(length1) && my >= 365 - (i * 30) + gap1 && my <= 390 - (i * 30) + gap1 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[i][0] >= '0' && dua[i][0] <= '9') {
 				l = i;
-				// the box hangs below the row, or sits above it when there is no room below
 				if ((237 - (i * 30) + gap1) >= 0) {
 					hang = 237 - (i * 30) + gap1;
 					dialog_num = 0;
@@ -2129,8 +2017,22 @@ void iSpecialKeyboard(unsigned char key) {
 	if (key == GLUT_KEY_HOME) {}
 }
 
+void create_data_files() {
+	const char *folders[3] = { "data_files", "data_files/regular_reads", "data_files/targetted_reads" };
+	for (int i = 0; i < 3; i++) {
+#ifdef _WIN32
+		_mkdir(folders[i]);
+#else
+		mkdir(folders[i], 0755);
+#endif
+	}
+
+	fclose(fopen(regular_participant_list, "a"));
+	fclose(fopen(targetted_participant_list, "a"));
+}
 
 int main() {
+	create_data_files();
 	bg_music = iLoadSound("music/Famous__bg_sound.wav", true);
 	count_sound = iLoadSound("music/Water_Drop_Sound_Effect.wav");
 	goal_sound = iLoadSound("music/correct answer.wav");
