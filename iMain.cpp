@@ -4,9 +4,10 @@
 const int maxuser = 15, maxdua = 30;
 
 int y, y_1, r, num = 0, length, length1, gap=0, gap1=0, hang, dialog_num;
+int dua_slot[2][3] = { {81, 51, 21}, {95, 62, 35} };	// y of each dua dialog option above hang: [0] normal box, [1] inverted box
+int two_option_slot[2][2] = { {48, 18}, {62, 32} };	// y of Rename / Delete above hang in the two-option box: [0] normal, [1] inverted
 bool is_empty, is_dialog_open = false, is_deleting = false;
 char s[100], nme[100];
-const char dialog[100] = "pictures/dialog_boxes/dialog%d.bmp";
 char days[100];
 int s_index, done[maxdua], size1, size2;
 char participant[maxuser][100];
@@ -23,7 +24,7 @@ const char bg[100] = "pictures/bg/plain_bg%d.bmp";
 const char main_bg[100] = "pictures/bg/bg%d.bmp";
 int bg_index = 0;
 char theme[3][100] = { "1. Green", "2. Purple", "3. Blue" };
-long long tm[maxdua], scnds;
+long long tm[maxdua], dur[maxdua], scnds;
 long long tmr, plus1=86400, plus2=604800;
 int tog;
 bool musicOn = true, musicOn2 = true;
@@ -384,15 +385,14 @@ void print_name_index() {
 	}
 
 	if (is_dialog_open && (num == 17 || num == 19)) {
-		sprintf(path, dialog, dialog_num + 1);
-		iShowBMP2(205, hang, path, 0);
+		iShowBMP2(205, hang, dialog_num == 0 ? "pictures/dialog_boxes/dialog_2_options1.bmp" : "pictures/dialog_boxes/dialog_2_options2.bmp", 0);
 
 		if(dialog_num == 0) {
             iText(248, hang + 48, "Rename", GLUT_BITMAP_TIMES_ROMAN_24);
             iText(248, hang + 18, "Delete", GLUT_BITMAP_TIMES_ROMAN_24);
         } else {
-            iText(248, hang + 68, "Rename", GLUT_BITMAP_TIMES_ROMAN_24);
-            iText(248, hang + 38, "Delete", GLUT_BITMAP_TIMES_ROMAN_24);
+            iText(248, hang + 62, "Rename", GLUT_BITMAP_TIMES_ROMAN_24);
+            iText(248, hang + 32, "Delete", GLUT_BITMAP_TIMES_ROMAN_24);
         }
 	}
 
@@ -456,7 +456,7 @@ void print_dua_index() {
 		int buffer=0;
 
 		if (num == 26) {
-			sscanf(dua[i], "%s %s %s %d %s %d %lld %d", random1[i], dua1[i], random2[i], &count_dua[i], random4[i], &count_dua1[i], &tm[i], &done[i]);
+			sscanf(dua[i], "%s %s %s %d %s %d %lld %d %lld", random1[i], dua1[i], random2[i], &count_dua[i], random4[i], &count_dua1[i], &tm[i], &done[i], &dur[i]);
 			if (tm[i] > seconds) {
 				tmi = tm[i] - seconds;
 			} else {
@@ -523,11 +523,20 @@ void print_dua_index() {
 	}
 	fclose(fp);
 
-	if (is_dialog_open && (num == 18 || num==26)) {
-		iShowBMP2(185, 210 - l * 30 + gap1, "pictures/dialog_boxes/dialog.bmp", 0);
-		iText(248, 318 - l * 30 + gap1, "Continue", GLUT_BITMAP_TIMES_ROMAN_24);
-		iText(248, 288 - l * 30 + gap1, "Rename", GLUT_BITMAP_TIMES_ROMAN_24);
-		iText(248, 258 - l * 30 + gap1, "Delete", GLUT_BITMAP_TIMES_ROMAN_24);
+	if (is_dialog_open && num == 26 && done[l] == 1) {
+		iShowBMP2(205, hang, dialog_num == 0 ? "pictures/dialog_boxes/dialog_2_options1.bmp" : "pictures/dialog_boxes/dialog_2_options2.bmp", 0);
+		iText(248, hang + two_option_slot[dialog_num][0], "Rename", GLUT_BITMAP_TIMES_ROMAN_24);
+		iText(248, hang + two_option_slot[dialog_num][1], "Delete", GLUT_BITMAP_TIMES_ROMAN_24);
+	} else if (is_dialog_open && (num == 18 || num==26)) {
+		iShowBMP2(206, hang, dialog_num == 0 ? "pictures/dialog_boxes/dialog_3_options1.bmp" : "pictures/dialog_boxes/dialog_3_options2.bmp", 0);
+		
+		if (num == 26 && done[l] == 0 && tm[l] <= seconds) {
+			iText(248, hang + dua_slot[dialog_num][0], "Restart", GLUT_BITMAP_TIMES_ROMAN_24);
+		} else {
+			iText(248, hang + dua_slot[dialog_num][0], "Continue", GLUT_BITMAP_TIMES_ROMAN_24);
+		}
+		iText(248, hang + dua_slot[dialog_num][1], "Rename", GLUT_BITMAP_TIMES_ROMAN_24);
+		iText(248, hang + dua_slot[dialog_num][2], "Delete", GLUT_BITMAP_TIMES_ROMAN_24);
 	}
 
 	if (is_deleting && (num == 18 || num==26)) {
@@ -620,10 +629,10 @@ void create_file() {
 		sprintf(path, file1, 1);
 		f_in = fopen(path, "w");
 		if (tog == 1) {
-			fprintf(f_in, "01. %s - %s - %d %lld 0", dua2, s, count, seconds+plus1);
+			fprintf(f_in, "01. %s - %s - %d %lld 0 %lld", dua2, s, count, seconds+plus1, plus1);
 		}
 		if (tog == 2) {
-			fprintf(f_in, "01. %s - %s - %d %lld 0", dua2, s, count, seconds+plus2);
+			fprintf(f_in, "01. %s - %s - %d %lld 0 %lld", dua2, s, count, seconds+plus2, plus2);
 		}
 		strcpy(dua2, "");
 	}
@@ -647,7 +656,7 @@ void take_input() {
 	}
 	for (int i = 0; i < maxdua; i++) {
 		if (num == 30) {
-			fscanf(fp, "%s %s %s %d %s %d %lld %d", random1[i], dua1[i], random2[i], &count_dua[i], random4[i], &count_dua1[i], &tm[i], &done[i]);
+			fscanf(fp, "%s %s %s %d %s %d %lld %d %lld", random1[i], dua1[i], random2[i], &count_dua[i], random4[i], &count_dua1[i], &tm[i], &done[i], &dur[i]);
 		} else {
 			fscanf(fp, "%s %s %s %d %s %lld", random1[i], dua1[i], random2[i], &count_dua[i], random4[i], &tm[i]);
 		}
@@ -667,6 +676,7 @@ void shift_data() {
 		strcpy(random2[i], random2[i - 1]);
 		strcpy(random4[i], random4[i - 1]);
 		tm[i] = tm[i - 1];
+		dur[i] = dur[i - 1];
 	}
 	count_dua[0] = count;
 	count_dua1[0] = 0;
@@ -682,9 +692,11 @@ void shift_data() {
 	if (num == 30) {
 		if (tog == 1) {
 			tm[0] = seconds+plus1;
+			dur[0] = plus1;
 		}
 		if (tog == 2) {
 			tm[0] = seconds+plus2;
+			dur[0] = plus2;
 		}
 	} else {
 		tm[0] = tmr;
@@ -695,13 +707,14 @@ void replace_file() {
 	char temp[100];
 	strcpy(temp, dua1[l]);
 	int temp1=count_dua[l],temp3=count_dua1[l],temp4=done[l];
-	long long temp2 = tm[l];
+	long long temp2 = tm[l], temp5 = dur[l];
 	for (int i = l - 1; i >= 0; i--) {
 		strcpy(dua1[i + 1], dua1[i]);
 		count_dua[i + 1] = count_dua[i];
 		count_dua1[i + 1] = count_dua1[i];
 		done[i + 1] = done[i];
 		tm[i + 1] = tm[i];
+		dur[i + 1] = dur[i];
 	}
 	count_dua[0] = temp1;
 	count_dua1[0] = temp3;
@@ -709,15 +722,16 @@ void replace_file() {
 	strcpy(dua1[0], temp);
 	strcpy(temp, "");
 	tm[0] = temp2;
+	dur[0] = temp5;
 
 	FILE *fp;
 	fp = fopen("temp.txt", "w");
 	for (int i = 0; i < maxdua; i++) {
-		if (random1[i][0] <='0' || random1[i][0]>'9') {
+		if (random1[i][0] < '0' || random1[i][0]>'9') {
 			continue;
 		}
 		if (call == 26 || num == 30 || call==30 || call == 2) {
-			fprintf(fp, "%s %s %s %d %s %d %lld %d\n", random1[i], dua1[i], random2[i], count_dua[i], random4[i], count_dua1[i], tm[i], done[i]);
+			fprintf(fp, "%s %s %s %d %s %d %lld %d %lld\n", random1[i], dua1[i], random2[i], count_dua[i], random4[i], count_dua1[i], tm[i], done[i], dur[i]);
 		} else {
 			fprintf(fp, "%s %s %s %d %s %lld\n", random1[i], dua1[i], random2[i], count_dua[i], random4[i], tm[i]);
 		}
@@ -832,15 +846,15 @@ void rename() {
             fgets(line1[i], 100, fp);
         }
         int rand, rand1, rand7;
-        long long rand2;
+        long long rand2, rand8;
         char rand3[50], rand4[3], rand5[3], rand6[3];
         if(call != 18) {
-            sscanf(line1[l],"%s %s %s %d %s %d %lld %d", rand4, rand3, rand5, &rand, rand6, &rand1, &rand2, &rand7);
+            sscanf(line1[l],"%s %s %s %d %s %d %lld %d %lld", rand4, rand3, rand5, &rand, rand6, &rand1, &rand2, &rand7, &rand8);
             strcpy(line1[l],"");
             if(l<9) {
-                sprintf(line1[l],"0%d. %s - %d - %d %lld %d\n",l+1,s,rand,rand1,rand2,rand7);
+                sprintf(line1[l],"0%d. %s - %d - %d %lld %d %lld\n",l+1,s,rand,rand1,rand2,rand7,rand8);
             } else {
-                sprintf(line1[l],"%d. %s - %d - %d %lld %d\n",l+1,s,rand,rand1,rand2,rand7);
+                sprintf(line1[l],"%d. %s - %d - %d %lld %d %lld\n",l+1,s,rand,rand1,rand2,rand7,rand8);
             }
         } else {
             sscanf(line1[l],"%s %s %s %d %s %lld",rand4,rand3,rand5,&rand,rand6,&rand2);
@@ -890,7 +904,7 @@ void notification() {
     FILE *fp=fopen(targetted_participant_list,"r");
     for(int i=0;i < maxuser;i++) {
         fgets(participant[i],100,fp);
-        if(participant[i][0]<='0' || participant[i][0]>'9') {
+        if(participant[i][0]<'0' || participant[i][0]>'9') {
             continue;
         }
         cnt++;
@@ -909,7 +923,7 @@ void notification() {
             size1=0;
             for(int j=0;j < maxdua;j++) {
                 fgets(dua[j],100,fp);
-                if(dua[j][0]<='0' || dua[j][0]>'9') {
+                if(dua[j][0]<'0' || dua[j][0]>'9') {
                     continue;
                 }
                 int rnd,rnd2,rnd3;
@@ -942,7 +956,7 @@ void notification() {
                 size2=0;
                 for(int k=0;k < maxuser;k++) {
                     fgets(participant[k],100,fp);
-                    if(participant[k][0]<='0' || participant[k][0]>'9') {
+                    if(participant[k][0]<'0' || participant[k][0]>'9') {
                         continue;
                     }
                     if(k!=i) {
@@ -1084,7 +1098,7 @@ void scan_file() {
 			} else {
 				strcpy(dua[i], "");
 				fgets(dua[i], 100, fp);
-				sscanf(dua[i], "%s %s %s %d %s %d %lld %d", random1[i], dua1[i], random2[i], &count_dua[i], random4[i], &count_dua1[i], &tm[i], &done[i]);
+				sscanf(dua[i], "%s %s %s %d %s %d %lld %d %lld", random1[i], dua1[i], random2[i], &count_dua[i], random4[i], &count_dua1[i], &tm[i], &done[i], &dur[i]);
 				if (strcmp(dua1[i], dua2) == 0) {
 					l = i;
 					g = 1;
@@ -1118,8 +1132,7 @@ void iDraw() {
 		iRectangle(312, 240, 100, 50);
 		iRectangle(312, 140, 100, 50);
 		iSetColor(255, 255, 255);
-		time_t q;
-		q = time(NULL);
+		time_t q = time(NULL);
 		scnds=q;
 		struct tm* curr_time;
 		curr_time = localtime(&q);
@@ -1130,7 +1143,7 @@ void iDraw() {
 		iText(113, 157, "History", GLUT_BITMAP_TIMES_ROMAN_24);
 		iText(320, 257, "Themes", GLUT_BITMAP_TIMES_ROMAN_24);
 		iText(328, 157, "Target", GLUT_BITMAP_TIMES_ROMAN_24);
-		iShowBMP2(471, 471, musicOn ? "pictures/sound_on.bmp" : "pictures/sound_off.bmp", 0xffffff);
+		iShowBMP2(468, 471, musicOn ? "pictures/sound_on.bmp" : "pictures/sound_off.bmp", 0xffffff);
 
 		//notification();
 
@@ -1153,7 +1166,7 @@ void iDraw() {
 	if (num == 2) {
 		load_bg();
 		iShowBMP2(5, 475, "pictures/red_back_arrow.bmp", 0);
-		iShowBMP2(471, 471, musicOn2 ? "pictures/sound_on.bmp" : "pictures/sound_off.bmp", 0xffffff);
+		iShowBMP2(468, 471, musicOn2 ? "pictures/sound_on.bmp" : "pictures/sound_off.bmp", 0xffffff);
 
 		tasbeeh_pic_index = count % 12;
 		sprintf(path, tasbeeh_pic, tasbeeh_pic_index + 1);
@@ -1584,9 +1597,11 @@ void iMouse(int button, int state, int mx, int my) {
 				count_dua[l] = count;
 				if (tog == 1) {
 					tm[l] = seconds+plus1;
+					dur[l] = plus1;
 				}
 				if (tog == 2) {
 					tm[l] = seconds + plus2;
+					dur[l] = plus2;
 				}
 				replace_file();
 			}
@@ -1646,7 +1661,7 @@ void iMouse(int button, int state, int mx, int my) {
 							hang = 250 - (i * 50) + gap;
 							dialog_num = 0;
 						} else {
-							hang = 363 - (i * 50) + gap;
+							hang = 369 - (i * 50) + gap;
 							dialog_num = 1;
 						}
 						is_dialog_open = true;
@@ -1656,11 +1671,11 @@ void iMouse(int button, int state, int mx, int my) {
 			}
 
 			if (is_dialog_open && mx >= 248 && mx <= 312 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-				if((my >= hang + 18 && my <= hang + 32 && dialog_num == 0) || (my >= hang + 38 && my <= hang + 52 && dialog_num == 1)) {
+				if((my >= hang + 18 && my <= hang + 32 && dialog_num == 0) || (my >= hang + 32 && my <= hang + 46 && dialog_num == 1)) {
 					is_deleting = true;
 					is_dialog_open = false;
 				}
-				if((my >= hang + 48 && my <= hang + 62 && dialog_num == 0) || (my >= hang + 68 && my <= hang + 82 && dialog_num == 1)) {
+				if((my >= hang + 48 && my <= hang + 62 && dialog_num == 0) || (my >= hang + 62 && my <= hang + 76 && dialog_num == 1)) {
 					call = 17;
 					num = 4;
 					is_dialog_open = false;
@@ -1701,12 +1716,20 @@ void iMouse(int button, int state, int mx, int my) {
 		for (int i = 0; i < maxdua; i++) {
 			if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 45 + content_bar_width(length1) && my >= 365 - (i * 30) + gap1 && my <= 390 - (i * 30) + gap1 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[i][0] >= '0' && dua[i][0] <= '9') {
 				l = i;
+				// the box hangs below the row, or sits above it when there is no room below
+				if ((237 - (i * 30) + gap1) >= 0) {
+					hang = 237 - (i * 30) + gap1;
+					dialog_num = 0;
+				} else {
+					hang = 387 - (i * 30) + gap1;
+					dialog_num = 1;
+				}
 				is_dialog_open = true;
 				break;
 			}
 		}
 
-		if (is_dialog_open && mx >= 248 && mx <= 390 && my >= 318 - l * 30 + gap1 && my <= 332 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		if (is_dialog_open && mx >= 248 && mx <= 390 && my >= hang + dua_slot[dialog_num][0] && my <= hang + dua_slot[dialog_num][0] + 14 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			count = count_dua[l];
 			seconds = time(NULL);
 			b = 1;
@@ -1714,11 +1737,11 @@ void iMouse(int button, int state, int mx, int my) {
 			call = 18;
 			num = 2;
 			is_dialog_open = false;
-		} else if (is_dialog_open && mx >= 248 && mx <= 328 && my >= 288 - l * 30 + gap1 && my <= 302 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		} else if (is_dialog_open && mx >= 248 && mx <= 328 && my >= hang + dua_slot[dialog_num][1] && my <= hang + dua_slot[dialog_num][1] + 14 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			is_dialog_open = false;
 			call = num;
 			num = 6;
-		} else if (is_dialog_open && mx >= 248 && mx <= 312 && my >= 258 - l * 30 + gap1 && my <= 272 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		} else if (is_dialog_open && mx >= 248 && mx <= 312 && my >= hang + dua_slot[dialog_num][2] && my <= hang + dua_slot[dialog_num][2] + 14 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			is_deleting = true;
 			is_dialog_open = false;
 		} else if (is_deleting && mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
@@ -1745,7 +1768,7 @@ void iMouse(int button, int state, int mx, int my) {
 							hang = 250 - (i * 50) + gap;
 							dialog_num = 0;
 						} else {
-							hang = 363 - (i * 50) + gap;
+							hang = 369 - (i * 50) + gap;
 							dialog_num = 1;
 						}
 						is_dialog_open = true;
@@ -1755,11 +1778,11 @@ void iMouse(int button, int state, int mx, int my) {
 			}
 
 			if (is_dialog_open && mx >= 248 && mx <= 312 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-				if((my >= hang + 18 && my <= hang + 32 && dialog_num == 0) || (my >= hang + 38 && my <= hang + 52 && dialog_num == 1)) {
+				if((my >= hang + 18 && my <= hang + 32 && dialog_num == 0) || (my >= hang + 32 && my <= hang + 46 && dialog_num == 1)) {
 					is_deleting = true;
 					is_dialog_open = false;
 				}
-				if((my >= hang + 48 && my <= hang + 62 && dialog_num == 0) || (my >= hang + 68 && my <= hang + 82 && dialog_num == 1)) {
+				if((my >= hang + 48 && my <= hang + 62 && dialog_num == 0) || (my >= hang + 62 && my <= hang + 76 && dialog_num == 1)) {
 					call = 19;
 					num = 4;
 					is_dialog_open = false;
@@ -1834,12 +1857,43 @@ void iMouse(int button, int state, int mx, int my) {
 		for (int i = 0; i < maxdua; i++) {
 			if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 45 + content_bar_width(length1) && my >= 365 - (i * 30) + gap1 && my <= 390 - (i * 30) + gap1 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[i][0] >= '0' && dua[i][0] <= '9') {
 				l = i;
+				if (done[i] == 1) {
+					if ((270 - (i * 30) + gap1) >= 0) {
+						hang = 270 - (i * 30) + gap1;
+						dialog_num = 0;
+					} else {
+						hang = 389 - (i * 30) + gap1;
+						dialog_num = 1;
+					}
+				} else {
+					if ((237 - (i * 30) + gap1) >= 0) {
+						hang = 237 - (i * 30) + gap1;
+						dialog_num = 0;
+					} else {
+						hang = 387 - (i * 30) + gap1;
+						dialog_num = 1;
+					}
+				}
 				is_dialog_open = true;
 				break;
 			}
 		}
 		
-		if (is_dialog_open && mx >= 248 && mx <= 390 && my >= 318 - l * 30 + gap1 && my <= 332 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		if (is_dialog_open && done[l] == 1 && mx >= 248 && mx <= 328 && my >= hang + two_option_slot[dialog_num][0] && my <= hang + two_option_slot[dialog_num][0] + 14 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			is_dialog_open = false;
+			call = num;
+			num = 6;
+		} else if (is_dialog_open && done[l] == 1 && mx >= 248 && mx <= 312 && my >= hang + two_option_slot[dialog_num][1] && my <= hang + two_option_slot[dialog_num][1] + 14 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			is_deleting = true;
+			is_dialog_open = false;
+		} else if (is_dialog_open && mx >= 248 && mx <= 390 && my >= hang + dua_slot[dialog_num][0] && my <= hang + dua_slot[dialog_num][0] + 14 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && done[l] == 0 && tm[l] <= time(NULL)) {
+			count_dua1[l] = 0;
+			seconds = time(NULL);
+			tm[l] = seconds + dur[l];
+			call = 26;
+			is_dialog_open = false;
+			replace_file();
+		} else if (is_dialog_open && done[l] == 0 && mx >= 248 && mx <= 390 && my >= hang + dua_slot[dialog_num][0] && my <= hang + dua_slot[dialog_num][0] + 14 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			count = count_dua1[l];
 			seconds = time(NULL);
 			b = 1;
@@ -1847,11 +1901,11 @@ void iMouse(int button, int state, int mx, int my) {
 			call = 26;
 			num = 2;
 			is_dialog_open = false;
-		} else if (is_dialog_open && mx >= 248 && mx <= 328 && my >= 288 - l * 30 + gap1 && my <= 302 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		} else if (is_dialog_open && done[l] == 0 && mx >= 248 && mx <= 328 && my >= hang + dua_slot[dialog_num][1] && my <= hang + dua_slot[dialog_num][1] + 14 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			is_dialog_open = false;
 			call = num;
 			num = 6;
-		} else if (is_dialog_open && mx >= 248 && mx <= 312 && my >= 258 - l * 30 + gap1 && my <= 272 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		} else if (is_dialog_open && done[l] == 0 && mx >= 248 && mx <= 312 && my >= hang + dua_slot[dialog_num][2] && my <= hang + dua_slot[dialog_num][2] + 14 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			is_deleting = true;
 			is_dialog_open = false;
 		} else if (is_deleting && mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
