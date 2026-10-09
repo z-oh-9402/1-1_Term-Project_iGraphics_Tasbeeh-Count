@@ -1,4 +1,5 @@
 #include "iGraphics.h"
+#include "iSound.h"
 
 int y, y_1, r, num = 0, length, length1, gap=0, gap1=0, hang, dialog_num;
 bool is_empty, is_dialog_open = false, is_deleting = false;
@@ -24,6 +25,7 @@ long long tm[10], scnds;
 long long tmr, plus1=86400, plus2=604800;
 int tog;
 bool musicOn = true, musicOn2 = true;
+int bg_music, count_sound, goal_sound;
 int count_dua[10], count_dua1[10], target[10];
 int count = 0, cnt=0, cnt1=0;
 time_t seconds;
@@ -1068,6 +1070,12 @@ void scan_file() {
 void iDraw() {
 	iClear();
 
+	if (musicOn && num != 2) {
+		iResumeSound(bg_music);
+	} else {
+		iPauseSound(bg_music);
+	}
+
 	if (num == 0) {
 		load_bg();
 		iShowBMP2(128, 305, "pictures/title.bmp", 0);
@@ -1094,6 +1102,7 @@ void iDraw() {
 		iText(113, 157, "History", GLUT_BITMAP_TIMES_ROMAN_24);
 		iText(320, 257, "Themes", GLUT_BITMAP_TIMES_ROMAN_24);
 		iText(328, 157, "Target", GLUT_BITMAP_TIMES_ROMAN_24);
+		iShowBMP2(471, 471, musicOn ? "pictures/sound_on.bmp" : "pictures/sound_off.bmp", 0xffffff);
 
 		//notification();
 
@@ -1116,6 +1125,7 @@ void iDraw() {
 	if (num == 2) {
 		load_bg();
 		iShowBMP2(5, 475, "pictures/red_back_arrow.bmp", 0);
+		iShowBMP2(471, 471, musicOn2 ? "pictures/sound_on.bmp" : "pictures/sound_off.bmp", 0xffffff);
 
 		tasbeeh_pic_index = count % 12;
 		sprintf(path, tasbeeh_pic, tasbeeh_pic_index + 1);
@@ -1402,7 +1412,9 @@ void iPassiveMouseMove(int mx, int my) {
 void iMouse(int button, int state, int mx, int my) {
 
 	if (num == 0) {
-		if (mx >= 100 && mx <= 200 && my >= 240 && my <= 290 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		if (mx >= 471 && mx <= 507 && my >= 471 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			musicOn = !musicOn;
+		} else if (mx >= 100 && mx <= 200 && my >= 240 && my <= 290 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			seconds = time(NULL);
 			num = 2;
 		} else if (mx >= 100 && mx <= 200 && my >= 140 && my <= 190 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
@@ -1421,7 +1433,9 @@ void iMouse(int button, int state, int mx, int my) {
 			m = 2;
 		} else;
 	} else if (num == 2) {
-		if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		if (mx >= 471 && mx <= 507 && my >= 471 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			musicOn2 = !musicOn2;
+		} else if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 16;
 		} else if (mx >= 60 && mx <= 160 && my >= 80 && my <= 130 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			if (b == 1) {
@@ -1438,6 +1452,9 @@ void iMouse(int button, int state, int mx, int my) {
 					if (count_dua1[l] >= count_dua[l] && tm[l] > scnd) {
 						call = 2;
 						done[l] = 1;
+						if (musicOn2) {
+							iPlaySound(goal_sound);
+						}
 					} else {
                         done[l] = 0;
                     }
@@ -1604,6 +1621,9 @@ void iMouse(int button, int state, int mx, int my) {
 					if (count_dua1[l] >= count_dua[l] && tm[l]>scnd) {
 						call = 2;
 						done[l]=1;
+						if (musicOn2) {
+							iPlaySound(goal_sound);
+						}
 					} else {
                         done[l] = 0;
                     }
@@ -1914,6 +1934,9 @@ void iKeyboard(unsigned char key) {
 	} else {
 		if (key == ' ' && num==2) {
 			count++;
+			if (musicOn2) {
+				iPlaySound(count_sound);
+			}
 		} else if (key == '\r') {
 			if (num == 5) {
 				if(call == 17 || call == 19) {
@@ -2056,6 +2079,9 @@ void iSpecialKeyboard(unsigned char key) {
 
 
 int main() {
+	bg_music = iLoadSound("music/Famous__bg_sound.wav", true);
+	count_sound = iLoadSound("music/Water_Drop_Sound_Effect.wav");
+	goal_sound = iLoadSound("music/correct answer.wav");
 	iInitialize(512, 512, "Tasbeeh Count");
 	return 0;
 }
