@@ -1,14 +1,16 @@
 #include "iGraphics.h"
 #include "iSound.h"
 
+const int maxuser = 15, maxdua = 30;
+
 int y, y_1, r, num = 0, length, length1, gap=0, gap1=0, hang, dialog_num;
 bool is_empty, is_dialog_open = false, is_deleting = false;
 char s[100], nme[100];
 const char dialog[100] = "pictures/dialog_boxes/dialog%d.bmp";
 char days[100];
-int s_index, done[10], size1, size2;
-char participant[15][100];
-char dua[10][100], dua1[10][100], dua2[100];
+int s_index, done[maxdua], size1, size2;
+char participant[maxuser][100];
+char dua[maxdua][100], dua1[maxdua][100], dua2[100];
 const char regular_participant_list[100] = "data_files/regular_reads/participant_list.txt";
 const char targetted_participant_list[100] = "data_files/targetted_reads/participant_list.txt";
 const char file[100] = "data_files/regular_reads/participant%d.txt";
@@ -16,17 +18,17 @@ const char file1[100] = "data_files/targetted_reads/participant%d.txt";
 char text[3][100] = { "Enter your name:", "Enter the Dua:", "Enter your target:" };
 const char tasbeeh_pic[100] = "pictures/tasbeeh/pic%d.png";
 int seq, tasbeeh_pic_index=0;
-char random1[10][5], random2[10][5], random3[15][5], random4[10][5], name[15][100], tym[100], cnt_dua[100];
+char random1[maxdua][5], random2[maxdua][5], random3[maxuser > maxdua ? maxuser : maxdua][5], random4[maxdua][5], name[maxuser][100], tym[100], cnt_dua[100];
 const char bg[100] = "pictures/bg/plain_bg%d.bmp";
 const char main_bg[100] = "pictures/bg/bg%d.bmp";
 int bg_index = 0;
 char theme[3][100] = { "1. Green", "2. Purple", "3. Blue" };
-long long tm[10], scnds;
+long long tm[maxdua], scnds;
 long long tmr, plus1=86400, plus2=604800;
 int tog;
 bool musicOn = true, musicOn2 = true;
 int bg_music, count_sound, goal_sound;
-int count_dua[10], count_dua1[10], target[10];
+int count_dua[maxdua], count_dua1[maxdua], target[maxdua];
 int count = 0, cnt=0, cnt1=0;
 time_t seconds;
 int b = 0, w = 0, l, g = 0, m = 0, f, call = 0;
@@ -35,7 +37,7 @@ char *count_store = (char*)malloc(sizeof(char)* 10);
 char comment[2][100] = { "Saved Successfully!!!", "Deleted Successfully!!!" };
 char record[10][100];
 int snd_index = 0;
-char line[15][100], line1[10][100];
+char line[maxuser][100], line1[maxdua][100];
 char path[100];
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::Idraw Here::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
@@ -119,8 +121,8 @@ void delete_file() {
 	strcpy(participant[cnt - 1], "");
 	fclose(fp);
 
-	for (int i = r; i < 15; i++) {
-		if (i == 14) {
+	for (int i = r; i < maxuser; i++) {
+		if (i == maxuser - 1) {
 			FILE *f_out;
 
 			if (num == 19) {
@@ -254,8 +256,8 @@ void delete_data() {
 		strcpy(participant[cnt - 1], "");
 		fclose(fp);
 
-		for (int i = r; i < 15; i++) {
-			if (i == 14) {
+		for (int i = r; i < maxuser; i++) {
+			if (i == maxuser - 1) {
 				FILE *f_out;
 				if (num == 26 || call == 2) {
 					sprintf(path, file1, i + 1);
@@ -305,13 +307,42 @@ void delete_data() {
 	}
 }
 
+void draw_scrollbar(int* length, int cnt, int width, int* y, int* gap) {
+	int overflow = (cnt * width) - 375;	
+	if (overflow > 0) {
+		*length = 512 * 512 / (512 + overflow);
+		if (*y < *length) {
+			*y = *length;
+		}
+		iSetColor(200, 200, 200);
+		iFilledRectangle(500, 0, 12, 512);
+		iSetColor(96, 96, 96);
+		iFilledRectangle(500, *y - *length, 12, *length);
+		*gap = (512 - *y) * overflow / (512 - *length);
+	} else {
+		*length = 512;
+		*gap = 0;
+	}
+}
+
+int purple_plus_x(int len) {
+	return (len < 512) ? 458 : 470;
+}
+
+int content_bar_width(int len) {
+	int width = (len < 512) ? 405 : 417;
+	if (num != 19 && num != 26) {
+		width += 5;
+	}
+	return width;
+}
+
 void print_name_index() {
     call = num;
 	is_empty = true;
 	cnt = 0;
 	iShowBMP2(5, 475, "pictures/red_back_arrow.bmp", 0);
 	iSetColor(0, 0, 0);
-	int vert = 345;
 	iText(100, 400 + gap, "Recent users", GLUT_BITMAP_TIMES_ROMAN_24);
 
 	FILE *m_file;
@@ -321,7 +352,8 @@ void print_name_index() {
 		m_file = fopen(regular_participant_list, "r");
 	}
 
-	for (int i = 0; i < 15; i++) {
+	int vert = 345 + gap;
+	for (int i = 0; i < maxuser; i++) {
 		strcpy(participant[i], "");
 		fgets(participant[i], 100, m_file);
 		if (participant[i][0] < '0' || participant[i][0]>'9') {
@@ -329,10 +361,10 @@ void print_name_index() {
 		}
 
 		iSetColor(196, 164, 132);
-		iFilledRectangle(45, vert + gap, 422, 25);
+		iFilledRectangle(45, vert, content_bar_width(length), 25);
 		iSetColor(0, 0, 0);
-		iRectangle(45, vert + gap, 422, 25);
-		iText(50, vert + 5 + gap, participant[i], GLUT_BITMAP_TIMES_ROMAN_24);
+		iRectangle(45, vert, content_bar_width(length), 25);
+		iText(50, vert + 5, participant[i], GLUT_BITMAP_TIMES_ROMAN_24);
 		vert = vert - 50;
 		cnt++;
 		is_empty = false;
@@ -389,21 +421,19 @@ void print_dua_index() {
 	iShowBMP2(5, 475, "pictures/red_back_arrow.bmp", 0);
 	iSetColor(0, 0, 0);
 	FILE *fp;
-	int vert;
 
 	if (num == 26) {
-		iText(145, 440, "Your Targets", GLUT_BITMAP_TIMES_ROMAN_24);
-		vert = 385;
+		iText(145, 440 + gap1, "Your Targets", GLUT_BITMAP_TIMES_ROMAN_24);
 		sprintf(path, file1, r + 1);
 		fp = fopen(path, "r");
 	} else {
-		iText(145, 420, "Your History", GLUT_BITMAP_TIMES_ROMAN_24);
-		vert = 365;
+		iText(145, 420 + gap1, "Your History", GLUT_BITMAP_TIMES_ROMAN_24);
 		sprintf(path, file, r + 1);
 		fp = fopen(path, "r");
 	}
 
-	for (int i = 0; i < 10; i++) {
+	int vert = 365 + gap1;
+	for (int i = 0; i < maxdua; i++) {
 		strcpy(dua[i], "");
 		strcpy(random1[i], "");
 		strcpy(dua1[i], "");
@@ -415,9 +445,9 @@ void print_dua_index() {
 		}
 
 		iSetColor(255, 255, 255);
-		iFilledRectangle(45, vert, 422, 25);
+		iFilledRectangle(45, vert, content_bar_width(length1), 25);
 		iSetColor(0, 0, 0);
-		iRectangle(45, vert, 422, 25);
+		iRectangle(45, vert, content_bar_width(length1), 25);
 		struct tm* curr_time;
 		int day=0;
 		seconds = time(NULL);
@@ -472,19 +502,19 @@ void print_dua_index() {
 			if(num == 26) {
                 if(done[i] == 1) {
                     iText(50, vert + 5, dua[i], GLUT_BITMAP_TIMES_ROMAN_24);
-                    iShowBMP2(432, vert, "pictures/green_tick.bmp", 0);
+                    iShowBMP2(432 + content_bar_width(length1) - 422, vert, "pictures/green_tick.bmp", 0);
                 } else {
                     if(tm[i] <= seconds) {
-                        iShowBMP2(432, vert, "pictures/red_cross.bmp", 0);
+                        iShowBMP2(432 + content_bar_width(length1) - 422, vert, "pictures/red_cross.bmp", 0);
                     } else {
                         if (day > 0) {
-                            iText(330, vert + 7, days, GLUT_BITMAP_HELVETICA_18);
+                            iText(330 + content_bar_width(length1) - 422, vert + 7, days, GLUT_BITMAP_HELVETICA_18);
                         }
-                        iText(392, vert + 7, ti, GLUT_BITMAP_HELVETICA_18);
+                        iText(392 + content_bar_width(length1) - 422, vert + 7, ti, GLUT_BITMAP_HELVETICA_18);
                     }
                 }
             } else {
-				iText(392, vert + 7, ti, GLUT_BITMAP_HELVETICA_18);
+				iText(392 + content_bar_width(length1) - 422, vert + 7, ti, GLUT_BITMAP_HELVETICA_18);
 			}
 		}
 		vert = vert - 30;
@@ -494,10 +524,10 @@ void print_dua_index() {
 	fclose(fp);
 
 	if (is_dialog_open && (num == 18 || num==26)) {
-		iShowBMP2(185, 210 - l * 30, "pictures/dialog_boxes/dialog.bmp", 0);
-		iText(248, 318 - l * 30, "Continue", GLUT_BITMAP_TIMES_ROMAN_24);
-		iText(248, 288 - l * 30, "Rename", GLUT_BITMAP_TIMES_ROMAN_24);
-		iText(248, 258 - l * 30, "Delete", GLUT_BITMAP_TIMES_ROMAN_24);
+		iShowBMP2(185, 210 - l * 30 + gap1, "pictures/dialog_boxes/dialog.bmp", 0);
+		iText(248, 318 - l * 30 + gap1, "Continue", GLUT_BITMAP_TIMES_ROMAN_24);
+		iText(248, 288 - l * 30 + gap1, "Rename", GLUT_BITMAP_TIMES_ROMAN_24);
+		iText(248, 258 - l * 30 + gap1, "Delete", GLUT_BITMAP_TIMES_ROMAN_24);
 	}
 
 	if (is_deleting && (num == 18 || num==26)) {
@@ -531,7 +561,7 @@ void append_file() {
 		f_in = fopen(targetted_participant_list, "r");
 	}
 
-	for (int i = 1; i<15; i++) {
+	for (int i = 1; i < maxuser; i++) {
 		fscanf(f_in, "%s", random3[i]);
 		fgets(name[i], 100, f_in);
 	}
@@ -543,7 +573,7 @@ void append_file() {
 		f_in = fopen(targetted_participant_list, "w");
 	}
 
-	for (int i = 0; i < 15; i++) {
+	for (int i = 0; i < maxuser; i++) {
 		if (random3[i][0] < '0' || random3[i][0] > '9') {
 			continue;
 		}
@@ -560,7 +590,7 @@ void append_file() {
 
 void create_file() {
 	FILE *f_in;
-	for (int i = 14; i > 0; i--) {
+	for (int i = maxuser - 1; i > 0; i--) {
 		FILE *f_out;
 		if (num == 7) {
 			sprintf(path, file, i);
@@ -604,7 +634,7 @@ void create_file() {
 }
 
 void take_input() {
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < maxdua; i++) {
 		strcpy(random1[i], "");
 	}
 	FILE *fp;
@@ -615,7 +645,7 @@ void take_input() {
 		sprintf(path, file, r + 1);
 		fp = fopen(path, "r");
 	}
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < maxdua; i++) {
 		if (num == 30) {
 			fscanf(fp, "%s %s %s %d %s %d %lld %d", random1[i], dua1[i], random2[i], &count_dua[i], random4[i], &count_dua1[i], &tm[i], &done[i]);
 		} else {
@@ -626,15 +656,13 @@ void take_input() {
 }
 
 void shift_data() {
-	for (int i = 9; i > 0; i--) {
+	for (int i = maxdua - 1; i > 0; i--) {
 		count_dua[i] = count_dua[i - 1];
 		count_dua1[i] = count_dua1[i - 1];
 		done[i] = done[i - 1];
 		strcpy(dua1[i], dua1[i - 1]);
 		if (random1[i - 1][0] >= '0' && random1[i - 1][0] <= '9') {
-		    random1[i][0] = '0';
-            random1[i][1] = i + 49;
-			random1[i][2] = '.';
+			sprintf(random1[i], "%02d.", i + 1);
 		}
 		strcpy(random2[i], random2[i - 1]);
 		strcpy(random4[i], random4[i - 1]);
@@ -684,7 +712,7 @@ void replace_file() {
 
 	FILE *fp;
 	fp = fopen("temp.txt", "w");
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < maxdua; i++) {
 		if (random1[i][0] <='0' || random1[i][0]>'9') {
 			continue;
 		}
@@ -742,7 +770,7 @@ void replace_file() {
 	} else {
 		fptr = fopen(regular_participant_list, "r");
 	}
-	for (int i = 0; i < 15; i++) {
+	for (int i = 0; i < maxuser; i++) {
 		fgets(participant[i], 100, fptr);
 	}
 	participant[r][0] = '0';
@@ -765,7 +793,7 @@ void replace_file() {
 	} else {
 		fp = fopen(regular_participant_list, "w");
 	}
-	for (int i = 0; i < 15; i++) {
+	for (int i = 0; i < maxuser; i++) {
 		fprintf(fp, "%s", participant[i]);
 	}
 	fclose(fp);
@@ -790,7 +818,7 @@ void rename() {
     }
 
     if(call == 17 || call == 19) {
-        for(int i=0; i<15; i++) {
+        for(int i=0; i < maxuser; i++) {
             fgets(line[i],100, fp);
         }
         strcpy(line[r], "");
@@ -800,7 +828,7 @@ void rename() {
             sprintf(line[r], "%d. %s\n", r+1, s);
         }
     } else {
-        for(int i=0; i<10; i++) {
+        for(int i=0; i < maxdua; i++) {
             fgets(line1[i], 100, fp);
         }
         int rand, rand1, rand7;
@@ -840,13 +868,13 @@ void rename() {
     }
 
     if(call == 17 || call == 19) {
-        for(int i=0;i<15;i++) {
+        for(int i=0;i < maxuser;i++) {
             if(line[i][0]>'0' || line[i][0]<='9') {
                 fprintf(fp,"%s",line[i]);
             }
         }
     } else {
-        for(int i=0;i<10;i++) {
+        for(int i=0;i < maxdua;i++) {
             if(line1[i][0]>'0' || line1[i][0]<='9') {
                 fprintf(fp,"%s",line1[i]);
             }
@@ -860,7 +888,7 @@ void rename() {
 void notification() {
     cnt = 0;
     FILE *fp=fopen(targetted_participant_list,"r");
-    for(int i=0;i<15;i++) {
+    for(int i=0;i < maxuser;i++) {
         fgets(participant[i],100,fp);
         if(participant[i][0]<='0' || participant[i][0]>'9') {
             continue;
@@ -875,11 +903,11 @@ void notification() {
         return;
     } else {
         for(int i=0;i<cnt;i++) {
-            char dua3[10][100];
+            char dua3[maxdua][100];
 			sprintf(path, file1, i + 1);
             fp=fopen(path,"r");
             size1=0;
-            for(int j=0;j<10;j++) {
+            for(int j=0;j < maxdua;j++) {
                 fgets(dua[j],100,fp);
                 if(dua[j][0]<='0' || dua[j][0]>'9') {
                     continue;
@@ -909,10 +937,10 @@ void notification() {
                 }
                 fclose(fp);
             } else {
-                char participant1[5][100];
+                char participant1[maxuser][100];
                 fp=fopen(targetted_participant_list,"r");
                 size2=0;
-                for(int k=0;k<15;k++) {
+                for(int k=0;k < maxuser;k++) {
                     fgets(participant[k],100,fp);
                     if(participant[k][0]<='0' || participant[k][0]>'9') {
                         continue;
@@ -1034,7 +1062,7 @@ void scan_file() {
 	}
 
 	if (num == 5 || num==21) {
-		for (int i = 0; i < 15; i++) {
+		for (int i = 0; i < maxuser; i++) {
 			strcpy(name[i], "");
 			fscanf(fp, "%s", random3[i]);
 			fgets(name[i], 100, fp);
@@ -1044,7 +1072,7 @@ void scan_file() {
 			}
 		}
 	} else {
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < maxdua; i++) {
 			if (num == 11) {
 				strcpy(dua[i], "");
 				fgets(dua[i], 100, fp);
@@ -1191,16 +1219,7 @@ void iDraw() {
 		load_bg();
 		call = 8;
 		print_name_index();
-		length = 512 - ((cnt*50) - 375);
-		if(length<512) {
-            iSetColor(200, 200, 200);
-            iFilledRectangle(500, 0, 12, 512);
-            iSetColor(96, 96, 96);
-            iFilledRectangle(500, y - length,  12, length);
-            gap = 512-y;
-        } else {
-            gap=0;
-        }
+		draw_scrollbar(&length, cnt, 50, &y, &gap);
 	}
 
 	if (num == 9) {
@@ -1220,6 +1239,7 @@ void iDraw() {
 		load_bg();
 		call = 12;
 		print_dua_index();
+		draw_scrollbar(&length1, cnt1, 30, &y_1, &gap1);
 	}
 
 	if (num == 13) {
@@ -1258,49 +1278,22 @@ void iDraw() {
 		load_bg();
 		call = 17;
 		print_name_index();
-		length = 512 - ((cnt * 50) - 375);
-		if(length<512) {
-            iSetColor(200, 200, 200);
-            iFilledRectangle(500, 0, 12, 512);
-            iSetColor(96, 96, 96);
-            iFilledRectangle(500, y - length, 12, length);
-            gap = 512 - y;
-        } else {
-            gap=0;
-        }
+		draw_scrollbar(&length, cnt, 50, &y, &gap);
 	}
 
 	if (num == 18) {
 		load_bg();
 		call = 18;
 		print_dua_index();
-		length1 = 512 - ((cnt1*30)-375);
-		if(length<512) {
-            iSetColor(200,200,200);
-            iFilledRectangle(500,0,12,512);
-            iSetColor(96,96,96);
-            iFilledRectangle(500,y_1 - length1,12,length1);
-            gap = 512 - y_1;
-        } else {
-            gap=0;
-        }
+		draw_scrollbar(&length1, cnt1, 30, &y_1, &gap1);
 	}
 
 	if (num == 19) {
 		load_bg();
-		iShowBMP2(458, 400, "pictures/purple_plus.bmp", 0);
+		iShowBMP2(purple_plus_x(length), 470, "pictures/purple_plus.bmp", 0);
 		call = 19;
 		print_name_index();
-		length = 512 - ((cnt * 50) - 375);
-		if(length < 512) {
-            iSetColor(200, 200, 200);
-            iFilledRectangle(500, 0, 12, 512);
-            iSetColor(96, 96, 96);
-            iFilledRectangle(500, y - length, 12, length);
-            gap = 512 - y;
-        } else {
-            gap=0;
-        }
+		draw_scrollbar(&length, cnt, 50, &y, &gap);
 	}
 
 	if (num == 20) {
@@ -1332,8 +1325,9 @@ void iDraw() {
 
 	if (num == 26) {
 		load_bg();
-		iShowBMP2(5, 10, "pictures/purple_plus.bmp", 0);
+		iShowBMP2(purple_plus_x(length1), 470, "pictures/purple_plus.bmp", 0);
 		print_dua_index();
+		draw_scrollbar(&length1, cnt1, 30, &y_1, &gap1);
 	}
 
 	if (num == 27) {
@@ -1394,13 +1388,13 @@ void iMouseMove(int mx, int my) {
         }
     }
 
-    if((num == 12 || num == 18 || num == 26) && length<512 && mx>=500) {
-        if((512-my)<length) {
+    if((num == 12 || num == 18 || num == 26) && length1<512 && mx>=500) {
+        if((512-my)<length1) {
             y_1 = 512;
         } else if(my<0) {
-            y_1 = length;
+            y_1 = length1;
         } else {
-            y_1 = my + length;
+            y_1 = my + length1;
         }
     }
 }
@@ -1513,8 +1507,8 @@ void iMouse(int button, int state, int mx, int my) {
 			num = 6;
 		}
 	} else if (num == 8 && !is_empty) {
-		for (int i = 0; i < 15; i++) {
-			if (mx >= 45 && mx <= 467 && my >= 345 - (i * 50) && my <= 370 - (i * 50) && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[i][0] >= '0' && participant[i][0] <= '9') {
+		for (int i = 0; i < maxuser; i++) {
+			if (mx >= 45 && mx <= 45 + content_bar_width(length) && my >= 345 - (i * 50) && my <= 370 - (i * 50) && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && participant[i][0] >= '0' && participant[i][0] <= '9') {
 				r = i;
 				num = 9;
 				break;
@@ -1528,6 +1522,7 @@ void iMouse(int button, int state, int mx, int my) {
 		if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 8;
 		} else if (mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			y_1 = 512;
 			num = 12;
 		} else if (mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 10;
@@ -1549,8 +1544,8 @@ void iMouse(int button, int state, int mx, int my) {
 			num = 9;
 		} 
 
-		for (int i = 0; i < 10; i++) {
-			if (mx >= 45 && mx <= 467 && my >= 365 - (i * 30) && my <= 390 - (i * 30) && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[i][0] >= '0' && random1[i][0] <= '9') {
+		for (int i = 0; i < maxdua; i++) {
+			if (mx >= 45 && mx <= 45 + content_bar_width(length1) && my >= 365 - (i * 30) + gap1 && my <= 390 - (i * 30) + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && random1[i][0] >= '0' && random1[i][0] <= '9') {
 				count_dua[i] += count;
 				tm[i] = tmr;
 				l = i;
@@ -1639,10 +1634,11 @@ void iMouse(int button, int state, int mx, int my) {
 		}
 	} else if (num == 17) {
 		if (!is_empty) {
-			for (int i = 0; i < 15; i++) {
-				if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 467 && my >= (345 - (i * 50) + gap) && my <= (370 - (i * 50) + gap) && participant[i][0] >= '0' && participant[i][0] <= '9') {
+			for (int i = 0; i < maxuser; i++) {
+				if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 45 + content_bar_width(length) && my >= (345 - (i * 50) + gap) && my <= (370 - (i * 50) + gap) && participant[i][0] >= '0' && participant[i][0] <= '9') {
 					r = i;
 					if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+						y_1 = 512;
 						num = 18;
 					}
 					if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
@@ -1702,15 +1698,15 @@ void iMouse(int button, int state, int mx, int my) {
 			}
 		}
 
-		for (int i = 0; i < 10; i++) {
-			if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 467 && my >= 365 - (i * 30) && my <= 390 - (i * 30) && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[0][0] >= '0' && dua[0][0] <= '9') {
+		for (int i = 0; i < maxdua; i++) {
+			if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 45 + content_bar_width(length1) && my >= 365 - (i * 30) + gap1 && my <= 390 - (i * 30) + gap1 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[i][0] >= '0' && dua[i][0] <= '9') {
 				l = i;
 				is_dialog_open = true;
 				break;
 			}
 		}
 
-		if (is_dialog_open && mx >= 248 && mx <= 390 && my >= 318 - l * 30 && my <= 332 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		if (is_dialog_open && mx >= 248 && mx <= 390 && my >= 318 - l * 30 + gap1 && my <= 332 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			count = count_dua[l];
 			seconds = time(NULL);
 			b = 1;
@@ -1718,11 +1714,11 @@ void iMouse(int button, int state, int mx, int my) {
 			call = 18;
 			num = 2;
 			is_dialog_open = false;
-		} else if (is_dialog_open && mx >= 248 && mx <= 328 && my >= 288 - l * 30 && my <= 302 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		} else if (is_dialog_open && mx >= 248 && mx <= 328 && my >= 288 - l * 30 + gap1 && my <= 302 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			is_dialog_open = false;
 			call = num;
 			num = 6;
-		} else if (is_dialog_open && mx >= 248 && mx <= 312 && my >= 258 - l * 30 && my <= 272 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		} else if (is_dialog_open && mx >= 248 && mx <= 312 && my >= 258 - l * 30 + gap1 && my <= 272 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			is_deleting = true;
 			is_dialog_open = false;
 		} else if (is_deleting && mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
@@ -1732,15 +1728,16 @@ void iMouse(int button, int state, int mx, int my) {
 			is_deleting = false;
 		} else;
 	} else if (num == 19) {
-		if (!is_dialog_open && !is_deleting && mx >= 458 && mx <= 490 && my >= 400 && my <= 432 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		if (!is_dialog_open && !is_deleting && mx >= purple_plus_x(length) && mx <= purple_plus_x(length) + 32 && my >= 470 && my <= 502 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 20;
 		} 
 		
 		if (!is_empty) {
-			for (int i = 0; i < 15; i++) {
-				if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 467 && my >= (345 - (i * 50) + gap) && my <= (370 - (i * 50) + gap) && participant[i][0] >= '0' && participant[i][0] <= '9') {
+			for (int i = 0; i < maxuser; i++) {
+				if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 45 + content_bar_width(length) && my >= (345 - (i * 50) + gap) && my <= (370 - (i * 50) + gap) && participant[i][0] >= '0' && participant[i][0] <= '9') {
 					r = i;
 					if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+						y_1 = 512;
 						num = 26;
 					}
 					if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
@@ -1834,15 +1831,15 @@ void iMouse(int button, int state, int mx, int my) {
 			}
 		}
 
-		for (int i = 0; i < 10; i++) {
-			if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 467 && my >= 365 - (i * 30) && my <= 390 - (i * 30) && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[i][0] >= '0' && dua[i][0] <= '9') {
+		for (int i = 0; i < maxdua; i++) {
+			if (!is_dialog_open && !is_deleting && mx >= 45 && mx <= 45 + content_bar_width(length1) && my >= 365 - (i * 30) + gap1 && my <= 390 - (i * 30) + gap1 && button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN && dua[i][0] >= '0' && dua[i][0] <= '9') {
 				l = i;
 				is_dialog_open = true;
 				break;
 			}
 		}
 		
-		if (is_dialog_open && mx >= 248 && mx <= 390 && my >= 318 - l * 30 && my <= 332 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		if (is_dialog_open && mx >= 248 && mx <= 390 && my >= 318 - l * 30 + gap1 && my <= 332 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			count = count_dua1[l];
 			seconds = time(NULL);
 			b = 1;
@@ -1850,18 +1847,18 @@ void iMouse(int button, int state, int mx, int my) {
 			call = 26;
 			num = 2;
 			is_dialog_open = false;
-		} else if (is_dialog_open && mx >= 248 && mx <= 328 && my >= 288 - l * 30 && my <= 302 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		} else if (is_dialog_open && mx >= 248 && mx <= 328 && my >= 288 - l * 30 + gap1 && my <= 302 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			is_dialog_open = false;
 			call = num;
 			num = 6;
-		} else if (is_dialog_open && mx >= 248 && mx <= 312 && my >= 258 - l * 30 && my <= 272 - l * 30 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		} else if (is_dialog_open && mx >= 248 && mx <= 312 && my >= 258 - l * 30 + gap1 && my <= 272 - l * 30 + gap1 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			is_deleting = true;
 			is_dialog_open = false;
 		} else if (is_deleting && mx >= 140 && mx <= 220 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			delete_data();
 		} else if (is_deleting && mx >= 275 && mx <= 355 && my >= 204 && my <= 239 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			is_deleting = false;
-		} else if (mx >= 5 && mx <= 37 && my >= 10 && my <= 42 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		} else if (!is_dialog_open && !is_deleting && mx >= purple_plus_x(length1) && mx <= purple_plus_x(length1) + 32 && my >= 470 && my <= 502 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			num = 32;
 		}
 	} else if (num == 27) {
@@ -1906,6 +1903,7 @@ void iMouse(int button, int state, int mx, int my) {
 			tog = 2;
 			num = 27;
 		} else if (mx >= 5 && mx <= 37 && my >= 475 && my <= 507 && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			y_1 = 512;
 			num = 26;
 		}
 	} else if (num == 33) {
