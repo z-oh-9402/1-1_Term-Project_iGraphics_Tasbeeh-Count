@@ -34,7 +34,7 @@ make run
 
 ### Windows
 
-The original version was built with Code::Blocks and MinGW. Open `Tasbeeh Count.cbp`, add `miniaudio.c` and `iSound.h` to the project, and build. GLUT must be set up in MinGW as in the usual iGraphics setup, linking `opengl32`, `glu32` and `glut32`. The current version has only been tested on Linux.
+The original version was built with Code::Blocks and MinGW. Open `Tasbeeh Count.cbp`, add `miniaudio.c` and `iSound.h` to the project, and build. GLUT must be set up in MinGW as in the usual iGraphics setup, linking `opengl32`, `glu32` and `glut32`. The runtime DLLs (`glut32.dll`, `glu32.dll`, `opengl32.dll`, `glaux.dll`) are kept in `bin/Debug/`, and the built `.exe` must sit next to them. The current version has only been tested on Linux.
 
 ## Controls
 

@@ -1,2 +1,45 @@
+# Build output
+bin/*
+!bin/Debug/
+bin/Debug/*
 build/
+obj/
+*.o
+*.obj
+*.a
+*.lib
+*.exe
+*.out
+*.dll
+*.so
+*.dylib
+*.d
+
+# Windows runtime DLLs needed to run the game (must come after *.dll)
+!bin/Debug/*.dll
+
+# Code::Blocks (per-user / generated files; keep the .cbp project file)
+*.depend
+*.layout
+*.save-failed
+*.bak
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# User data generated at runtime
 data_files/
+
+# Debug / crash artifacts
+*.log
+core
+*.stackdump
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
