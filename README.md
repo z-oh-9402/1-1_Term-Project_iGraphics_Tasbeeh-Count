@@ -80,3 +80,7 @@ Saved data is plain text, one entry per line, for example:
 - **iGraphics:** S. M. Shahriar Nirjon; updated by Mohammad Saifur Rahman.
 - **[stb_image](https://github.com/nothings/stb):** Sean Barrett (public domain / MIT).
 - **[miniaudio](https://miniaud.io):** David Reid (public domain / MIT-0).
+
+## License
+
+[MIT](LICENSE). The bundled third-party files (`iGraphics.h`, `glut.h`, `stb_image.h`, `miniaudio.h`, `miniaudio.c`) keep their own licenses.
